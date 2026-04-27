@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>دردشة اجتماعي - تواصل مع الأصدقاء</title>
+    <title>مجلس - دردشة اجتماعية</title>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
@@ -24,6 +24,8 @@
             --primary-dark: #4f46e5;
             --success: #10b981;
             --danger: #ef4444;
+            --warning: #f59e0b;
+            --vip: #fbbf24;
             --text: #ffffff;
             --text-secondary: #9ca3af;
             --border: #2a2a2a;
@@ -48,26 +50,23 @@
             bottom: 0;
             background: var(--bg);
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 10000;
         }
 
         .spinner {
-            width: 50px;
-            height: 50px;
+            width: 40px;
+            height: 40px;
             border: 3px solid var(--border);
             border-top-color: var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* شاشة تسجيل الدخول */
+        /* شاشات المصادقة */
         .auth-screen {
             position: fixed;
             top: 0;
@@ -89,46 +88,34 @@
             padding: 35px 25px;
             width: 100%;
             max-width: 350px;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-        }
-
-        .auth-header {
             text-align: center;
-            margin-bottom: 35px;
         }
 
-        .auth-header i {
+        .auth-card i {
             font-size: 60px;
             color: var(--primary);
             margin-bottom: 15px;
         }
 
-        .auth-header h1 {
+        .auth-card h1 {
             font-size: 28px;
-            background: linear-gradient(135deg, var(--primary), #a855f7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
         }
 
         .auth-input {
             width: 100%;
-            padding: 16px;
-            margin-bottom: 15px;
+            padding: 14px;
+            margin-bottom: 12px;
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 20px;
+            border-radius: 25px;
             color: var(--text);
-            font-size: 16px;
-        }
-
-        .auth-input:focus {
-            outline: none;
-            border-color: var(--primary);
+            font-size: 15px;
         }
 
         .auth-btn {
             width: 100%;
-            padding: 16px;
+            padding: 14px;
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             border: none;
             border-radius: 30px;
@@ -136,7 +123,7 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            margin-top: 10px;
+            margin-top: 8px;
         }
 
         /* التطبيق الرئيسي */
@@ -157,28 +144,57 @@
             border-bottom: 1px solid var(--border);
         }
 
-        .header-title {
+        .header-logo {
             font-size: 20px;
-            font-weight: 700;
+            font-weight: 800;
             background: linear-gradient(135deg, var(--primary), #a855f7);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .header-actions {
-            display: flex;
-            gap: 15px;
+        .header-id {
+            font-size: 12px;
+            background: var(--card);
+            padding: 6px 12px;
+            border-radius: 20px;
+            color: var(--text-secondary);
         }
 
-        .icon-btn {
+        /* شريط التنقل السفلي */
+        .bottom-nav {
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-around;
+            padding-bottom: env(safe-area-inset-bottom, 12px);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
             background: none;
             border: none;
             color: var(--text-secondary);
-            font-size: 22px;
+            font-size: 11px;
             cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 20px;
+            transition: all 0.2s;
         }
 
-        /* المحتوى الرئيسي - قابل للتمرير */
+        .nav-item i {
+            font-size: 22px;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        /* المحتوى الرئيسي */
         .main-content {
             flex: 1;
             overflow-y: auto;
@@ -186,90 +202,89 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        /* بطاقة الغرفة الرئيسية */
-        .main-room-card {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        /* بطاقة المستخدم */
+        .user-stats-card {
+            background: linear-gradient(135deg, var(--card), var(--surface));
             border-radius: 25px;
             padding: 20px;
             margin-bottom: 20px;
-            cursor: pointer;
-            transition: transform 0.2s;
+            border: 1px solid var(--border);
         }
 
-        .main-room-card:active {
-            transform: scale(0.98);
+        .user-stats-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
         }
 
-        .main-room-title {
+        .user-avatar-large {
+            font-size: 55px;
+        }
+
+        .user-stats-numbers {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-number {
+            text-align: center;
+        }
+
+        .stat-value {
             font-size: 20px;
             font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            color: var(--primary);
         }
 
-        .main-room-status {
-            font-size: 13px;
-            opacity: 0.9;
-            margin-top: 8px;
+        .stat-label {
+            font-size: 10px;
+            color: var(--text-secondary);
         }
 
-        /* قسم الغرف الخاصة */
+        .user-level-badge {
+            background: var(--primary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        /* أقسام الغرف */
         .section-title {
             font-size: 18px;
-            font-weight: 600;
-            margin: 20px 0 15px;
+            font-weight: 700;
+            margin: 20px 0 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .create-room-btn {
-            background: var(--card);
-            border: none;
-            padding: 8px 16px;
-            border-radius: 25px;
-            color: var(--primary);
-            font-size: 13px;
-            cursor: pointer;
+        .rooms-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
         }
 
-        /* بطاقات الغرف */
         .room-card {
             background: var(--card);
             border-radius: 20px;
-            padding: 15px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 12px;
+            padding: 16px;
             cursor: pointer;
             transition: all 0.2s;
+            border: 1px solid var(--border);
         }
 
-        .room-card:active {
-            transform: scale(0.98);
-        }
+        .room-card:active { transform: scale(0.97); }
 
         .room-icon {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-        }
-
-        .room-info {
-            flex: 1;
+            font-size: 35px;
+            margin-bottom: 10px;
         }
 
         .room-name {
             font-weight: 700;
             font-size: 16px;
-            margin-bottom: 4px;
+            margin-bottom: 5px;
         }
 
         .room-meta {
@@ -277,48 +292,14 @@
             color: var(--text-secondary);
         }
 
-        /* حقل إضافة صديق */
-        .add-friend-section {
-            background: var(--card);
-            border-radius: 20px;
-            padding: 15px;
-            margin: 20px 0;
-        }
-
-        .add-friend-title {
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-bottom: 12px;
-        }
-
-        .add-friend-input-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        .add-friend-input {
-            flex: 1;
-            padding: 12px 16px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 25px;
-            color: var(--text);
-            font-size: 14px;
-        }
-
-        .add-friend-btn {
-            background: var(--primary);
-            border: none;
-            padding: 0 20px;
-            border-radius: 25px;
-            color: white;
-            cursor: pointer;
-            font-size: 14px;
-        }
+        .room-card.vip { border-color: var(--vip); background: rgba(251, 191, 36, 0.05); }
+        .room-card.vip .room-name { color: var(--vip); }
 
         /* قائمة الأصدقاء */
         .friends-list {
-            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .friend-card {
@@ -328,18 +309,10 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 10px;
         }
 
         .friend-avatar {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            font-size: 40px;
         }
 
         .friend-info {
@@ -354,6 +327,11 @@
         .friend-status {
             font-size: 11px;
             color: var(--success);
+        }
+
+        .friend-id {
+            font-size: 10px;
+            color: var(--text-secondary);
         }
 
         /* شاشة الدردشة */
@@ -385,29 +363,36 @@
             font-size: 24px;
             cursor: pointer;
             width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .back-btn:active {
-            background: var(--card);
-        }
-
-        .chat-room-info {
-            flex: 1;
         }
 
         .chat-room-name {
+            flex: 1;
             font-weight: 700;
             font-size: 18px;
         }
 
-        .chat-room-status {
-            font-size: 11px;
-            color: var(--success);
+        .chat-room-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .chat-room-actions button {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        /* إعلان الغرفة */
+        .room-announcement {
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 15px;
+            padding: 12px;
+            margin: 10px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            border-right: 3px solid var(--primary);
         }
 
         .messages-area {
@@ -417,7 +402,6 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            -webkit-overflow-scrolling: touch;
         }
 
         .message-bubble {
@@ -425,7 +409,6 @@
             padding: 10px 14px;
             border-radius: 20px;
             font-size: 14px;
-            line-height: 1.4;
             word-wrap: break-word;
         }
 
@@ -449,11 +432,27 @@
 
         .message-time {
             font-size: 9px;
-            color: var(--text-secondary);
             margin-top: 4px;
             text-align: right;
         }
 
+        /* إرسال هدية */
+        .gift-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .gift-btn {
+            background: var(--card);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        /* حقل الإدخال */
         .input-area {
             padding: 12px 15px;
             background: var(--surface);
@@ -479,7 +478,6 @@
             border: none;
             border-radius: 50%;
             color: white;
-            font-size: 18px;
             cursor: pointer;
         }
 
@@ -513,35 +511,8 @@
             border-radius: 20px;
             color: var(--text);
             margin: 15px 0;
-            font-size: 15px;
         }
 
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .modal-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .modal-btn.confirm {
-            background: var(--primary);
-            color: white;
-        }
-
-        .modal-btn.cancel {
-            background: var(--surface);
-            color: var(--text);
-        }
-
-        /* إشعارات */
         .toast {
             position: fixed;
             bottom: 80px;
@@ -551,39 +522,19 @@
             padding: 10px 20px;
             border-radius: 50px;
             z-index: 4000;
-            animation: fadeUp 0.3s ease;
+            animation: fadeUp 0.3s;
             font-size: 13px;
-            backdrop-filter: blur(10px);
-            white-space: nowrap;
         }
 
         @keyframes fadeUp {
-            from {
-                opacity: 0;
-                transform: translateX(-50%) translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0);
-            }
-        }
-
-        /* أزرار الإجراءات */
-        .action-btn {
-            background: var(--card);
-            border: none;
-            padding: 6px 12px;
-            border-radius: 20px;
-            color: var(--primary);
-            font-size: 12px;
-            cursor: pointer;
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
 
         .empty-state {
             text-align: center;
-            padding: 30px;
+            padding: 40px;
             color: var(--text-secondary);
-            font-size: 13px;
         }
     </style>
 </head>
@@ -609,11 +560,10 @@
         let currentUser = null;
         let currentUserData = null;
         let currentChatRoom = null;
-        let currentChatName = null;
+        let currentChatRoomData = null;
         let messagesListener = null;
-        let selectedGender = null;
 
-        // ========== دوال مساعدة ==========
+        // دوال مساعدة
         function showToast(msg) {
             const existing = document.querySelector('.toast');
             if (existing) existing.remove();
@@ -624,43 +574,30 @@
             setTimeout(() => toast.remove(), 2000);
         }
 
-        function generateId() {
-            return Math.floor(100000 + Math.random() * 900000).toString();
+        function generateUserId() {
+            return Math.floor(100000000 + Math.random() * 900000000).toString();
         }
 
-        async function isUsernameUnique(username) {
-            const snap = await db.ref('users').orderByChild('username').equalTo(username).once('value');
-            return !snap.exists();
-        }
-
-        function formatTime(ts) {
-            if (!ts) return '';
-            const d = new Date(ts);
-            return d.toLocaleTimeString('ar', { hour: '2-digit', minute: '2-digit' });
-        }
-
-        // ========== واجهة تسجيل الدخول ==========
+        // واجهات المصادقة
         function renderAuth() {
             document.getElementById('app').innerHTML = `
                 <div class="auth-screen">
                     <div class="auth-card">
-                        <div class="auth-header">
-                            <i class="fas fa-comments"></i>
-                            <h1>دردشة اجتماعي</h1>
-                            <p style="color: #9ca3af; font-size: 13px; margin-top: 8px;">تواصل مع الأصدقاء حول العالم</p>
-                        </div>
+                        <i class="fas fa-comments"></i>
+                        <h1>مجلس</h1>
+                        <p style="color:#9ca3af; margin-bottom:25px;">دردشة اجتماعية</p>
                         <div id="loginForm">
-                            <input type="email" id="loginEmail" class="auth-input" placeholder="البريد الإلكتروني" autocomplete="email">
-                            <input type="password" id="loginPassword" class="auth-input" placeholder="كلمة المرور" autocomplete="current-password">
+                            <input type="email" id="loginEmail" class="auth-input" placeholder="البريد الإلكتروني">
+                            <input type="password" id="loginPassword" class="auth-input" placeholder="كلمة المرور">
                             <button onclick="handleLogin()" class="auth-btn">دخول</button>
-                            <button onclick="showRegisterForm()" class="auth-btn" style="background: #1a1a1a; margin-top: 10px;">إنشاء حساب جديد</button>
+                            <button onclick="showRegisterForm()" class="auth-btn" style="background:#1a1a1a;">إنشاء حساب</button>
                         </div>
-                        <div id="registerForm" style="display: none;">
-                            <input type="email" id="regEmail" class="auth-input" placeholder="البريد الإلكتروني" autocomplete="email">
-                            <input type="password" id="regPassword" class="auth-input" placeholder="كلمة المرور" autocomplete="new-password">
+                        <div id="registerForm" style="display:none;">
+                            <input type="email" id="regEmail" class="auth-input" placeholder="البريد الإلكتروني">
+                            <input type="password" id="regPassword" class="auth-input" placeholder="كلمة المرور">
                             <input type="password" id="regConfirm" class="auth-input" placeholder="تأكيد كلمة المرور">
                             <button onclick="handleRegister()" class="auth-btn">إنشاء حساب</button>
-                            <button onclick="showLoginForm()" class="auth-btn" style="background: #1a1a1a; margin-top: 10px;">عودة</button>
+                            <button onclick="showLoginForm()" class="auth-btn" style="background:#1a1a1a;">عودة</button>
                         </div>
                     </div>
                 </div>
@@ -670,28 +607,22 @@
         window.handleLogin = async () => {
             const email = document.getElementById('loginEmail').value;
             const pwd = document.getElementById('loginPassword').value;
-            if (!email || !pwd) return showToast('❌ الرجاء إدخال البريد الإلكتروني وكلمة المرور');
+            if (!email || !pwd) return showToast('املأ جميع الحقول');
             try {
                 await auth.signInWithEmailAndPassword(email, pwd);
-            } catch(e) { 
-                if (e.code === 'auth/invalid-credential') showToast('❌ البريد الإلكتروني أو كلمة المرور غير صحيحة');
-                else showToast('❌ ' + e.message);
-            }
+            } catch(e) { showToast('بريد أو كلمة مرور غير صحيحة'); }
         };
 
         window.handleRegister = async () => {
             const email = document.getElementById('regEmail').value;
             const pwd = document.getElementById('regPassword').value;
             const confirm = document.getElementById('regConfirm').value;
-            if (!email || !pwd) return showToast('❌ الرجاء إدخال جميع البيانات');
-            if (pwd !== confirm) return showToast('❌ كلمة المرور غير متطابقة');
-            if (pwd.length < 6) return showToast('❌ كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+            if (!email || !pwd) return showToast('املأ جميع الحقول');
+            if (pwd !== confirm) return showToast('كلمة المرور غير متطابقة');
+            if (pwd.length < 6) return showToast('كلمة المرور 6 أحرف على الأقل');
             try {
                 await auth.createUserWithEmailAndPassword(email, pwd);
-            } catch(e) {
-                if (e.code === 'auth/email-already-in-use') showToast('❌ البريد الإلكتروني مستخدم بالفعل');
-                else showToast('❌ ' + e.message);
-            }
+            } catch(e) { showToast(e.message); }
         };
 
         window.showRegisterForm = () => {
@@ -704,223 +635,237 @@
             document.getElementById('loginForm').style.display = 'block';
         };
 
-        // ========== إكمال الملف الشخصي ==========
+        // إكمال الملف الشخصي
         function renderCompleteProfile() {
             document.getElementById('app').innerHTML = `
                 <div class="auth-screen">
                     <div class="auth-card">
-                        <div class="auth-header">
-                            <i class="fas fa-user-astronaut"></i>
-                            <h1>مرحباً بك!</h1>
-                            <p style="color: #9ca3af; font-size: 13px;">أكمل بياناتك للبدء</p>
-                        </div>
-                        <div style="display: flex; justify-content: center; gap: 25px; margin-bottom: 25px;">
-                            <div onclick="selectGender('male')" id="maleBox" style="text-align: center; padding: 12px 20px; border-radius: 20px; cursor: pointer; border: 2px solid transparent;">
-                                <i class="fas fa-user-astronaut" style="font-size: 40px;"></i>
-                                <div style="font-size: 13px;">ذكر</div>
+                        <i class="fas fa-user-astronaut"></i>
+                        <h1>مرحباً بك!</h1>
+                        <p style="color:#9ca3af; margin-bottom:20px;">أكمل بياناتك</p>
+                        <div style="display:flex; justify-content:center; gap:25px; margin-bottom:20px;">
+                            <div onclick="selectGender('male')" id="maleBox" style="padding:10px 20px; border-radius:20px; cursor:pointer; border:2px solid transparent;">
+                                <i class="fas fa-user" style="font-size:30px;"></i><div>ذكر</div>
                             </div>
-                            <div onclick="selectGender('female')" id="femaleBox" style="text-align: center; padding: 12px 20px; border-radius: 20px; cursor: pointer; border: 2px solid transparent;">
-                                <i class="fas fa-user-ninja" style="font-size: 40px;"></i>
-                                <div style="font-size: 13px;">أنثى</div>
+                            <div onclick="selectGender('female')" id="femaleBox" style="padding:10px 20px; border-radius:20px; cursor:pointer; border:2px solid transparent;">
+                                <i class="fas fa-user" style="font-size:30px;"></i><div>أنثى</div>
                             </div>
                         </div>
-                        <select id="countrySelect" class="auth-input">
-                            <option value="">🌍 اختر الدولة</option>
-                            <option value="السعودية">🇸🇦 السعودية</option>
-                            <option value="مصر">🇪🇬 مصر</option>
-                            <option value="الإمارات">🇦🇪 الإمارات</option>
-                            <option value="الكويت">🇰🇼 الكويت</option>
-                            <option value="قطر">🇶🇦 قطر</option>
-                            <option value="عمان">🇴🇲 عمان</option>
-                            <option value="البحرين">🇧🇭 البحرين</option>
-                            <option value="الأردن">🇯🇴 الأردن</option>
-                            <option value="لبنان">🇱🇧 لبنان</option>
-                            <option value="العراق">🇮🇶 العراق</option>
-                        </select>
-                        <input type="text" id="username" class="auth-input" placeholder="👤 اسم المستخدم (فريد)">
-                        <button onclick="completeProfile()" class="auth-btn">🚀 ابدأ</button>
+                        <input type="text" id="username" class="auth-input" placeholder="اسم المستخدم">
+                        <button onclick="completeProfile()" class="auth-btn">ابدأ</button>
                     </div>
                 </div>
             `;
         }
 
+        let selectedGender = null;
         window.selectGender = (g) => {
             selectedGender = g;
             document.getElementById('maleBox').style.borderColor = g === 'male' ? '#6366f1' : 'transparent';
             document.getElementById('femaleBox').style.borderColor = g === 'female' ? '#6366f1' : 'transparent';
-            document.getElementById('maleBox').style.background = g === 'male' ? 'rgba(99,102,241,0.1)' : 'transparent';
-            document.getElementById('femaleBox').style.background = g === 'female' ? 'rgba(99,102,241,0.1)' : 'transparent';
         };
 
         window.completeProfile = async () => {
             const username = document.getElementById('username').value.trim();
-            const country = document.getElementById('countrySelect').value;
-            if (!selectedGender) return showToast('❌ الرجاء اختيار الجنس');
-            if (!country) return showToast('❌ الرجاء اختيار الدولة');
-            if (!username) return showToast('❌ الرجاء إدخال اسم المستخدم');
-            if (username.length < 3) return showToast('❌ اسم المستخدم يجب أن يكون 3 أحرف على الأقل');
-            if (!await isUsernameUnique(username)) return showToast('❌ اسم المستخدم موجود بالفعل');
+            if (!selectedGender) return showToast('اختر الجنس');
+            if (!username) return showToast('أدخل اسم المستخدم');
+            if (username.length < 3) return showToast('اسم المستخدم 3 أحرف على الأقل');
             
             const avatar = selectedGender === 'male' ? '👨' : '👩';
-            const userId = generateId();
+            const userId = generateUserId();
             await db.ref(`users/${currentUser.uid}`).set({
-                uid: currentUser.uid,
-                username, avatar, gender: selectedGender, country,
-                userId: userId, level: 0, xp: 0, online: true,
-                lastSeen: firebase.database.ServerValue.TIMESTAMP,
-                friends: {}, requests: {}, badges: ['🆕 جديد'],
-                profileCompleted: true, canChangeUsername: true, bio: '',
-                createdAt: firebase.database.ServerValue.TIMESTAMP
+                uid: currentUser.uid, username, avatar, gender: selectedGender,
+                userId: userId, level: 1, xp: 0, coins: 100, wins: 0,
+                online: true, friends: {}, requests: {}, badges: ['🆕 عضو جديد'],
+                profileCompleted: true, bio: 'مرحباً!', createdAt: firebase.database.ServerValue.TIMESTAMP
             });
             currentUserData = (await db.ref(`users/${currentUser.uid}`).once('value')).val();
-            renderMainHome();
+            renderMainApp();
         };
 
-        // ========== الصفحة الرئيسية ==========
-        function renderMainHome() {
+        // التطبيق الرئيسي
+        function renderMainApp() {
             document.getElementById('app').innerHTML = `
                 <div class="app-container">
                     <div class="app-header">
-                        <div class="header-title">دردشة اجتماعي</div>
-                        <div class="header-actions">
-                            <button class="icon-btn" id="profileBtn"><i class="fas fa-user-circle"></i></button>
-                        </div>
+                        <div class="header-logo"><i class="fas fa-crown" style="color:#f59e0b;"></i> مجلس</div>
+                        <div class="header-id">🆔 ${currentUserData.userId}</div>
                     </div>
                     <div class="main-content" id="mainContent"></div>
+                    <div class="bottom-nav">
+                        <button class="nav-item active" data-page="home"><i class="fas fa-home"></i><span>الرئيسية</span></button>
+                        <button class="nav-item" data-page="rooms"><i class="fas fa-users"></i><span>الغرف</span></button>
+                        <button class="nav-item" data-page="friends"><i class="fas fa-user-friends"></i><span>الأصدقاء</span></button>
+                        <button class="nav-item" data-page="profile"><i class="fas fa-user"></i><span>ملفي</span></button>
+                    </div>
                 </div>
             `;
-            document.getElementById('profileBtn').onclick = renderProfilePage;
-            loadHomeContent();
+            
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    const page = btn.dataset.page;
+                    if (page === 'home') renderHomePage();
+                    else if (page === 'rooms') renderRoomsPage();
+                    else if (page === 'friends') renderFriendsPage();
+                    else renderProfilePage();
+                });
+            });
+            renderHomePage();
         }
 
-        async function loadHomeContent() {
+        // الصفحة الرئيسية
+        async function renderHomePage() {
             const container = document.getElementById('mainContent');
-            
-            // تحديث حالة المستخدم
-            await db.ref(`users/${currentUser.uid}`).update({ online: true });
-            
-            // جلب عدد المتصلين
-            const usersSnap = await db.ref('users').once('value');
-            const users = usersSnap.val();
-            let onlineCount = 0;
-            if (users) onlineCount = Object.values(users).filter(u => u.online === true).length;
-            
-            // جلب الغرف
-            const roomsSnap = await db.ref('rooms').once('value');
-            const rooms = roomsSnap.val();
-            const roomsList = rooms ? Object.values(rooms) : [];
+            const onlineSnap = await db.ref('users').once('value');
+            const onlineCount = Object.values(onlineSnap.val() || {}).filter(u => u.online).length;
             
             container.innerHTML = `
-                <!-- الغرفة الرئيسية -->
-                <div class="main-room-card" onclick="openChatRoom('public', 'الغرفة الرئيسية')">
-                    <div class="main-room-title">
-                        <i class="fas fa-globe"></i> الغرفة الرئيسية
+                <div class="user-stats-card">
+                    <div class="user-stats-header">
+                        <div class="user-avatar-large">${currentUserData.avatar}</div>
+                        <div class="user-level-badge">مستوى ${currentUserData.level}</div>
                     </div>
-                    <div class="main-room-status">
-                        <i class="fas fa-circle" style="font-size: 8px;"></i> ${onlineCount} متصل الآن
-                    </div>
-                </div>
-                
-                <!-- إضافة صديق عبر ID -->
-                <div class="add-friend-section">
-                    <div class="add-friend-title"><i class="fas fa-user-plus"></i> إضافة صديق</div>
-                    <div class="add-friend-input-group">
-                        <input type="text" id="friendIdInput" class="add-friend-input" placeholder="أدخل ID المستخدم (مثال: 123456)" autocomplete="off">
-                        <button class="add-friend-btn" onclick="addFriendById()">إضافة</button>
+                    <div style="font-weight:700; font-size:18px;">${currentUserData.username}</div>
+                    <div class="user-stats-numbers" style="margin-top:15px;">
+                        <div class="stat-number"><div class="stat-value">${currentUserData.coins || 0}</div><div class="stat-label">💎 عملة</div></div>
+                        <div class="stat-number"><div class="stat-value">${currentUserData.wins || 0}</div><div class="stat-label">🏆 فوز</div></div>
+                        <div class="stat-number"><div class="stat-value">${onlineCount}</div><div class="stat-label">🟢 متصل</div></div>
                     </div>
                 </div>
                 
-                <!-- الغرف الخاصة -->
-                <div class="section-title">
-                    <span><i class="fas fa-users"></i> غرفتي</span>
-                    <button class="create-room-btn" onclick="showCreateRoomModal()">+ إنشاء غرفة</button>
+                <div class="section-title">🎯 غرف سريعة</div>
+                <div class="rooms-grid">
+                    <div class="room-card" onclick="openChatRoom('public', 'الغرفة العامة', {type:'normal'})">
+                        <div class="room-icon">🌍</div>
+                        <div class="room-name">الغرفة العامة</div>
+                        <div class="room-meta">دردشة مفتوحة</div>
+                    </div>
+                    <div class="room-card vip" onclick="openChatRoom('vip_room', 'VIP Lounge', {type:'vip'})">
+                        <div class="room-icon">👑</div>
+                        <div class="room-name">VIP Lounge</div>
+                        <div class="room-meta">⭐ مميزة</div>
+                    </div>
+                    <div class="room-card" onclick="openChatRoom('1v1_room', '1 ضد 1', {type:'private'})">
+                        <div class="room-icon">⚔️</div>
+                        <div class="room-name">1 ضد 1</div>
+                        <div class="room-meta">تحدي</div>
+                    </div>
+                    <div class="room-card" onclick="openChatRoom('council_room', 'المجلس', {type:'council'})">
+                        <div class="room-icon">🏛️</div>
+                        <div class="room-name">المجلس</div>
+                        <div class="room-meta">نقاشات</div>
+                    </div>
                 </div>
-                <div id="myRoomsList"></div>
                 
-                <!-- أصدقائي -->
-                <div class="section-title">
-                    <span><i class="fas fa-user-friends"></i> أصدقائي</span>
+                <div class="section-title">📢 الأحداث</div>
+                <div class="room-card" style="background:rgba(99,102,241,0.1);">
+                    <div class="room-icon">🎉</div>
+                    <div class="room-name">مسابقة الليلة</div>
+                    <div class="room-meta">الجائزة 500 عملة</div>
                 </div>
-                <div id="friendsList" class="friends-list"></div>
+            `;
+        }
+
+        // صفحة الغرف
+        async function renderRoomsPage() {
+            const container = document.getElementById('mainContent');
+            const roomsSnap = await db.ref('rooms').once('value');
+            const rooms = roomsSnap.val() || {};
+            
+            let myRooms = [];
+            let otherRooms = [];
+            for (const [id, room] of Object.entries(rooms)) {
+                if (room.ownerId === currentUser.uid) myRooms.push({id, ...room});
+                else otherRooms.push({id, ...room});
+            }
+            
+            container.innerHTML = `
+                <button onclick="showCreateRoomModal()" style="width:100%; padding:14px; background:linear-gradient(135deg,#6366f1,#4f46e5); border:none; border-radius:25px; color:white; font-weight:600; margin-bottom:20px;">
+                    <i class="fas fa-plus"></i> إنشاء غرفة جديدة
+                </button>
+                
+                <div class="section-title">🏠 غرفتي</div>
+                ${myRooms.length === 0 ? '<div class="empty-state">لا توجد غرف خاصة بعد</div>' : myRooms.map(room => `
+                    <div class="room-card" style="margin-bottom:10px;" onclick="openChatRoom('${room.id}', '${room.name}', {type:'private'})">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div class="room-icon">🏠</div>
+                            <div><div class="room-name">${room.name}</div><div class="room-meta">👑 مالك</div></div>
+                        </div>
+                    </div>
+                `).join('')}
+                
+                <div class="section-title">🌐 غرف عامة</div>
+                ${otherRooms.length === 0 ? '<div class="empty-state">لا توجد غرف عامة</div>' : otherRooms.map(room => `
+                    <div class="room-card" style="margin-bottom:10px;" onclick="openChatRoom('${room.id}', '${room.name}', {type:'public'})">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div class="room-icon">🌍</div>
+                            <div><div class="room-name">${room.name}</div><div class="room-meta">${room.memberCount || 0} عضو</div></div>
+                        </div>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        // صفحة الأصدقاء
+        async function renderFriendsPage() {
+            const container = document.getElementById('mainContent');
+            const friendsSnap = await db.ref(`users/${currentUser.uid}/friends`).once('value');
+            const friends = friendsSnap.val() || {};
+            
+            container.innerHTML = `
+                <div class="add-friend-section" style="background:var(--card); border-radius:20px; padding:15px; margin-bottom:20px;">
+                    <div style="margin-bottom:10px;">➕ إضافة صديق</div>
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="friendIdInput" class="auth-input" style="margin:0;" placeholder="أدخل ID المستخدم">
+                        <button onclick="addFriendById()" style="background:var(--primary); border:none; padding:12px 20px; border-radius:25px; color:white;">إضافة</button>
+                    </div>
+                </div>
+                
+                <div class="section-title">👥 أصدقائي (${Object.keys(friends).length})</div>
+                <div class="friends-list" id="friendsList"></div>
             `;
             
-            // عرض الغرف الخاصة (التي أنشأها المستخدم)
-            const myRooms = roomsList.filter(r => r.ownerId === currentUser.uid);
-            const myRoomsContainer = document.getElementById('myRoomsList');
-            if (myRooms.length === 0) {
-                myRoomsContainer.innerHTML = '<div class="empty-state">ليس لديك غرف خاصة بعد</div>';
+            const friendsList = document.getElementById('friendsList');
+            if (Object.keys(friends).length === 0) {
+                friendsList.innerHTML = '<div class="empty-state">لا يوجد أصدقاء بعد</div>';
             } else {
-                myRoomsContainer.innerHTML = myRooms.map(room => `
-                    <div class="room-card" onclick="openChatRoom('${room.id}', '${room.name.replace(/'/g, "\\'")}')">
-                        <div class="room-icon">🏠</div>
-                        <div class="room-info">
-                            <div class="room-name">${room.name}</div>
-                            <div class="room-meta">👑 مالك</div>
-                        </div>
-                    </div>
-                `).join('');
-            }
-            
-            // عرض الأصدقاء
-            await loadFriendsList();
-        }
-
-        async function loadFriendsList() {
-            const friendsSnap = await db.ref(`users/${currentUser.uid}/friends`).once('value');
-            const friends = friendsSnap.val();
-            const container = document.getElementById('friendsList');
-            
-            if (!friends || Object.keys(friends).length === 0) {
-                container.innerHTML = '<div class="empty-state">لا يوجد أصدقاء بعد</div>';
-                return;
-            }
-            
-            let friendsHtml = '';
-            for (const [fid] of Object.entries(friends)) {
-                const userSnap = await db.ref(`users/${fid}`).once('value');
-                const user = userSnap.val();
-                if (user) {
-                    friendsHtml += `
-                        <div class="friend-card">
-                            <div class="friend-avatar">${user.avatar}</div>
-                            <div class="friend-info">
-                                <div class="friend-name">${user.username}</div>
-                                <div class="friend-status">${user.online ? '🟢 متصل' : '⚫ غير متصل'} • #${user.userId}</div>
+                for (const [fid] of Object.entries(friends)) {
+                    const userSnap = await db.ref(`users/${fid}`).once('value');
+                    const user = userSnap.val();
+                    if (user) {
+                        friendsList.innerHTML += `
+                            <div class="friend-card">
+                                <div class="friend-avatar">${user.avatar}</div>
+                                <div class="friend-info">
+                                    <div class="friend-name">${user.username}</div>
+                                    <div class="friend-status">${user.online ? '🟢 متصل الآن' : '⚫ غير متصل'}</div>
+                                    <div class="friend-id">🆔 ${user.userId}</div>
+                                </div>
+                                <button class="gift-btn" onclick="sendGift('${fid}')">🎁 هدية</button>
+                                <button class="gift-btn" onclick="openChatRoom('private_${fid}', '${user.username}', {type:'private'})">💬</button>
                             </div>
-                            <button class="action-btn" onclick="openChatRoom('private_${fid}', '${user.username.replace(/'/g, "\\'")}')">💬</button>
-                        </div>
-                    `;
+                        `;
+                    }
                 }
             }
-            container.innerHTML = friendsHtml;
         }
 
-        // ========== إضافة صديق عبر ID ==========
         window.addFriendById = async () => {
             const friendId = document.getElementById('friendIdInput').value.trim();
-            if (!friendId) return showToast('❌ الرجاء إدخال ID المستخدم');
+            if (!friendId) return showToast('أدخل ID المستخدم');
             
-            // البحث عن المستخدم بالـ ID
             const usersSnap = await db.ref('users').once('value');
-            const users = usersSnap.val();
-            let foundUser = null;
             let foundUid = null;
-            
-            for (const [uid, user] of Object.entries(users)) {
+            for (const [uid, user] of Object.entries(usersSnap.val() || {})) {
                 if (user.userId === friendId && uid !== currentUser.uid) {
-                    foundUser = user;
                     foundUid = uid;
                     break;
                 }
             }
+            if (!foundUid) return showToast('لا يوجد مستخدم بهذا ID');
             
-            if (!foundUser) return showToast('❌ لا يوجد مستخدم بهذا ID');
-            
-            // التحقق من الصداقة الموجودة
-            const existingFriend = await db.ref(`users/${currentUser.uid}/friends/${foundUid}`).once('value');
-            if (existingFriend.exists()) return showToast('✅ هذا المستخدم صديق لك بالفعل');
-            
-            // إرسال طلب صداقة
             await db.ref(`users/${foundUid}/requests/${currentUser.uid}`).set({
                 fromUserId: currentUser.uid,
                 fromUsername: currentUserData.username,
@@ -928,60 +873,77 @@
                 fromId: currentUserData.userId,
                 timestamp: firebase.database.ServerValue.TIMESTAMP
             });
-            
-            showToast(`✅ تم إرسال طلب صداقة إلى ${foundUser.username}`);
-            document.getElementById('friendIdInput').value = '';
+            showToast('تم إرسال طلب الصداقة');
         };
 
-        // ========== فتح غرفة الدردشة ==========
-        window.openChatRoom = (roomId, roomName) => {
+        window.sendGift = async (toUid) => {
+            if (currentUserData.coins < 10) return showToast('لا يوجد عملات كافية');
+            await db.ref(`users/${currentUser.uid}`).update({ coins: currentUserData.coins - 10 });
+            const toUserSnap = await db.ref(`users/${toUid}`).once('value');
+            const toUser = toUserSnap.val();
+            await db.ref(`users/${toUid}`).update({ coins: (toUser.coins || 0) + 10 });
+            currentUserData.coins -= 10;
+            showToast('🎁 تم إرسال الهدية!');
+        };
+
+        // صفحة الملف الشخصي
+        async function renderProfilePage() {
+            const friendsCount = Object.keys(currentUserData.friends || {}).length;
+            const xpPercent = (currentUserData.xp % 1000) / 10;
+            
+            document.getElementById('mainContent').innerHTML = `
+                <div style="text-align:center;">
+                    <div style="font-size:80px;">${currentUserData.avatar}</div>
+                    <div style="font-size:22px; font-weight:700;">${currentUserData.username}</div>
+                    <div style="color:#9ca3af; font-size:13px;">🆔 ${currentUserData.userId}</div>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:20px 0;">
+                    <div class="room-card" style="text-align:center;"><div style="font-size:20px; font-weight:700; color:#6366f1;">${currentUserData.level}</div><div>المستوى</div></div>
+                    <div class="room-card" style="text-align:center;"><div style="font-size:20px; font-weight:700; color:#6366f1;">${currentUserData.xp || 0}</div><div>XP</div></div>
+                    <div class="room-card" style="text-align:center;"><div style="font-size:20px; font-weight:700; color:#6366f1;">${friendsCount}</div><div>أصدقاء</div></div>
+                </div>
+                <div style="background:#1a1a1a; height:8px; border-radius:10px; margin:15px 0;"><div style="width:${xpPercent}%; height:8px; background:linear-gradient(90deg,#6366f1,#a855f7); border-radius:10px;"></div></div>
+                <div style="margin:15px 0;">${currentUserData.badges.map(b => `<span style="display:inline-block; background:#1a1a1a; padding:6px 12px; border-radius:20px; font-size:12px; margin:4px;"><i class="fas fa-medal" style="color:#f59e0b;"></i> ${b}</span>`).join('')}</div>
+                <button onclick="logout()" style="width:100%; padding:14px; background:#ef4444; border:none; border-radius:25px; color:white; margin-top:20px;">تسجيل خروج</button>
+            `;
+        }
+
+        // فتح غرفة الدردشة
+        window.openChatRoom = async (roomId, roomName, roomData) => {
             if (messagesListener) messagesListener.off();
             currentChatRoom = roomId;
-            currentChatName = roomName;
+            currentChatRoomData = { name: roomName, ...roomData };
+            
+            // تأكد من وجود الغرفة في قاعدة البيانات للغرف المخصصة
+            if (!roomId.startsWith('private_') && roomId !== 'public' && roomId !== 'vip_room' && roomId !== '1v1_room' && roomId !== 'council_room') {
+                const roomSnap = await db.ref(`rooms/${roomId}`).once('value');
+                if (!roomSnap.exists()) {
+                    showToast('الغرفة غير موجودة');
+                    return;
+                }
+            }
             
             document.getElementById('app').innerHTML = `
                 <div class="chat-screen">
                     <div class="chat-header">
                         <button class="back-btn" onclick="closeChatRoom()"><i class="fas fa-arrow-right"></i></button>
-                        <div class="chat-room-info">
-                            <div class="chat-room-name">${roomName}</div>
-                            <div class="chat-room-status" id="chatStatus"><i class="fas fa-circle" style="font-size: 8px;"></i> متصلون: 0</div>
+                        <div class="chat-room-name">${roomName}</div>
+                        <div class="chat-room-actions">
+                            <button onclick="showGiftMenu()"><i class="fas fa-gift"></i></button>
                         </div>
+                    </div>
+                    <div class="room-announcement" id="roomAnnouncement">
+                        📢 مرحباً بك في ${roomName} - يرجى احترام الآخرين
                     </div>
                     <div class="messages-area" id="messagesArea"></div>
                     <div class="input-area">
-                        <input type="text" id="msgInput" class="message-input" placeholder="اكتب رسالة...">
+                        <input type="text" id="msgInput" class="message-input" placeholder="اكتب رسالتك...">
                         <button class="send-btn" onclick="sendChatMessage()"><i class="fas fa-paper-plane"></i></button>
                     </div>
                 </div>
             `;
             
             loadChatMessages();
-            
-            if (roomId === 'public') {
-                db.ref('users').on('value', (snap) => {
-                    const users = snap.val();
-                    let online = 0;
-                    if (users) online = Object.values(users).filter(u => u.online === true).length;
-                    const statusEl = document.getElementById('chatStatus');
-                    if (statusEl) statusEl.innerHTML = `<i class="fas fa-circle" style="font-size: 8px;"></i> ${online} متصل`;
-                });
-            } else if (roomId.startsWith('private_')) {
-                const friendId = roomId.replace('private_', '');
-                db.ref(`users/${friendId}`).on('value', (snap) => {
-                    const user = snap.val();
-                    const statusEl = document.getElementById('chatStatus');
-                    if (statusEl && user) {
-                        statusEl.innerHTML = user.online ? '<i class="fas fa-circle" style="font-size: 8px; color: #10b981;"></i> متصل' : '<i class="fas fa-circle" style="font-size: 8px; color: #6b7280;"></i> غير متصل';
-                    }
-                });
-            } else {
-                db.ref(`rooms/${roomId}/usersOnline`).on('value', (snap) => {
-                    const count = snap.numChildren();
-                    const statusEl = document.getElementById('chatStatus');
-                    if (statusEl) statusEl.innerHTML = `<i class="fas fa-circle" style="font-size: 8px;"></i> ${count} متصل`;
-                });
-            }
         };
 
         function loadChatMessages() {
@@ -999,11 +961,11 @@
                 if (!isOwn && currentChatRoom === 'public') {
                     senderHtml = `<div class="message-sender">${msg.senderUsername}</div>`;
                 }
-                if (!isOwn && currentChatRoom.startsWith('private_')) {
-                    senderHtml = `<div class="message-sender" style="color: #9ca3af;">${msg.senderUsername}</div>`;
+                if (msg.type === 'gift') {
+                    div.innerHTML = `🎁 ${msg.senderUsername} أرسل هدية 🎁<div class="message-time">${formatTime(msg.timestamp)}</div>`;
+                } else {
+                    div.innerHTML = senderHtml + msg.text + `<div class="message-time">${formatTime(msg.timestamp)}</div>`;
                 }
-                
-                div.innerHTML = senderHtml + msg.text + `<div class="message-time">${formatTime(msg.timestamp)}</div>`;
                 container.appendChild(div);
                 container.scrollTop = container.scrollHeight;
             });
@@ -1024,25 +986,57 @@
             input.value = '';
         };
 
-        window.closeChatRoom = () => {
-            if (messagesListener) messagesListener.off();
-            if (currentChatRoom !== 'public' && !currentChatRoom.startsWith('private_')) {
-                db.ref(`rooms/${currentChatRoom}/usersOnline/${currentUser.uid}`).remove();
-            }
-            renderMainHome();
+        window.showGiftMenu = () => {
+            const giftOptions = ['🌹 وردة', '🎈 بالون', '🍫 شوكولاتة', '💎 ماسة', '🏆 كأس'];
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h3 style="margin-bottom:15px;">🎁 إرسال هدية</h3>
+                    <div style="display:flex; flex-wrap:wrap; gap:10px;">
+                        ${giftOptions.map(gift => `
+                            <button onclick="sendGiftMessage('${gift}')" style="background:var(--card); border:none; padding:10px 15px; border-radius:20px; color:white; cursor:pointer;">${gift}</button>
+                        `).join('')}
+                    </div>
+                    <button onclick="this.closest('.modal').remove()" style="width:100%; margin-top:15px; padding:10px; background:transparent; border:1px solid var(--border); border-radius:20px; color:white;">إلغاء</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
         };
 
-        // ========== إنشاء غرفة ==========
+        window.sendGiftMessage = async (gift) => {
+            if (currentUserData.coins < 5) {
+                showToast('لا يوجد عملات كافية');
+                return;
+            }
+            await db.ref(`users/${currentUser.uid}`).update({ coins: currentUserData.coins - 5 });
+            currentUserData.coins -= 5;
+            await db.ref(`messages/${currentChatRoom}`).push({
+                senderId: currentUser.uid,
+                senderUsername: currentUserData.username,
+                type: 'gift',
+                text: gift,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+            document.querySelector('.modal').remove();
+            showToast(`🎁 أرسلت ${gift}`);
+        };
+
+        window.closeChatRoom = () => {
+            if (messagesListener) messagesListener.off();
+            renderMainApp();
+        };
+
         window.showCreateRoomModal = () => {
             const modal = document.createElement('div');
             modal.className = 'modal';
             modal.innerHTML = `
                 <div class="modal-content">
-                    <h3 style="margin-bottom: 10px;">✨ إنشاء غرفة جديدة</h3>
+                    <h3>إنشاء غرفة جديدة</h3>
                     <input type="text" id="newRoomName" class="modal-input" placeholder="اسم الغرفة">
-                    <div class="modal-buttons">
-                        <button class="modal-btn confirm" onclick="createNewRoom()">إنشاء</button>
-                        <button class="modal-btn cancel" onclick="this.closest('.modal').remove()">إلغاء</button>
+                    <div style="display:flex; gap:10px; margin-top:15px;">
+                        <button onclick="createNewRoom()" class="auth-btn" style="margin:0;">إنشاء</button>
+                        <button onclick="this.closest('.modal').remove()" class="auth-btn" style="background:#1a1a1a; margin:0;">إلغاء</button>
                     </div>
                 </div>
             `;
@@ -1051,81 +1045,14 @@
 
         window.createNewRoom = async () => {
             const name = document.getElementById('newRoomName').value.trim();
-            if (!name) return showToast('❌ الرجاء إدخال اسم الغرفة');
-            
+            if (!name) return showToast('أدخل اسم الغرفة');
             const roomId = db.ref('rooms').push().key;
             await db.ref(`rooms/${roomId}`).set({
-                id: roomId, name: name, image: '🏠', ownerId: currentUser.uid,
-                admins: [currentUser.uid], bannedUsers: {},
+                id: roomId, name, ownerId: currentUser.uid, memberCount: 1,
                 createdAt: firebase.database.ServerValue.TIMESTAMP
             });
             document.querySelector('.modal').remove();
-            showToast('✅ تم إنشاء الغرفة بنجاح');
-            renderMainHome();
-        };
-
-        // ========== صفحة الملف الشخصي ==========
-        async function renderProfilePage() {
-            const friendsCount = currentUserData.friends ? Object.keys(currentUserData.friends).length : 0;
-            const xpPercent = (currentUserData.xp % 1000) / 10;
-            
-            document.getElementById('app').innerHTML = `
-                <div class="app-container">
-                    <div class="app-header">
-                        <button class="back-btn" onclick="renderMainHome()" style="background: none; border: none; color: white; font-size: 24px;"><i class="fas fa-arrow-right"></i></button>
-                        <div class="header-title">ملفي الشخصي</div>
-                        <div style="width: 40px;"></div>
-                    </div>
-                    <div class="main-content">
-                        <div style="text-align: center; margin-bottom: 25px;">
-                            <div style="font-size: 80px;">${currentUserData.avatar}</div>
-                            <div style="font-size: 24px; font-weight: 700; margin: 10px 0 5px;">${currentUserData.username}</div>
-                            <div style="color: #9ca3af; font-size: 13px;">#${currentUserData.userId}</div>
-                        </div>
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 25px;">
-                            <div class="room-card" style="flex-direction: column; padding: 15px; text-align: center;">
-                                <div style="font-size: 24px; font-weight: 700; color: #6366f1;">${currentUserData.level}</div>
-                                <div style="font-size: 12px; color: #9ca3af;">المستوى</div>
-                            </div>
-                            <div class="room-card" style="flex-direction: column; padding: 15px; text-align: center;">
-                                <div style="font-size: 24px; font-weight: 700; color: #6366f1;">${currentUserData.xp}</div>
-                                <div style="font-size: 12px; color: #9ca3af;">XP</div>
-                            </div>
-                            <div class="room-card" style="flex-direction: column; padding: 15px; text-align: center;">
-                                <div style="font-size: 24px; font-weight: 700; color: #6366f1;">${friendsCount}</div>
-                                <div style="font-size: 12px; color: #9ca3af;">أصدقاء</div>
-                            </div>
-                        </div>
-                        <div class="xp-bar" style="background: #1a1a1a; height: 8px; border-radius: 10px; overflow: hidden; margin-bottom: 25px;">
-                            <div class="xp-fill" style="width: ${xpPercent}%; height: 100%; background: linear-gradient(90deg, #6366f1, #a855f7);"></div>
-                        </div>
-                        <div style="margin-bottom: 20px;">
-                            ${currentUserData.badges.map(b => `<span class="badge-item" style="display: inline-block; background: #1a1a1a; padding: 6px 12px; border-radius: 20px; font-size: 12px; margin: 4px;"><i class="fas fa-medal" style="color: #f59e0b;"></i> ${b}</span>`).join('')}
-                        </div>
-                        <div class="friend-card" style="justify-content: space-between;">
-                            <span><i class="fas fa-venus-mars"></i> ${currentUserData.gender === 'male' ? 'ذكر' : 'أنثى'}</span>
-                        </div>
-                        <div class="friend-card" style="justify-content: space-between;">
-                            <span><i class="fas fa-map-marker-alt"></i> ${currentUserData.country}</span>
-                        </div>
-                        <div class="friend-card" style="justify-content: space-between;">
-                            <span><i class="fas fa-info-circle"></i> ${currentUserData.bio || 'لا توجد سيرة'}</span>
-                        </div>
-                        <button onclick="editUserBio()" style="width: 100%; padding: 14px; background: #1a1a1a; border: none; border-radius: 25px; color: white; margin-top: 15px;"><i class="fas fa-edit"></i> تعديل السيرة الذاتية</button>
-                        <button onclick="logout()" style="width: 100%; padding: 14px; background: #ef4444; border: none; border-radius: 25px; color: white; margin-top: 10px;"><i class="fas fa-sign-out-alt"></i> تسجيل خروج</button>
-                    </div>
-                </div>
-            `;
-        }
-
-        window.editUserBio = () => {
-            const newBio = prompt('السيرة الذاتية الجديدة:', currentUserData.bio || '');
-            if (newBio !== null) {
-                db.ref(`users/${currentUser.uid}`).update({ bio: newBio });
-                currentUserData.bio = newBio;
-                renderProfilePage();
-                showToast('✅ تم تحديث السيرة الذاتية');
-            }
+            showToast('تم إنشاء الغرفة');
         };
 
         window.logout = async () => {
@@ -1134,7 +1061,13 @@
             renderAuth();
         };
 
-        // ========== مراقبة حالة المستخدم ==========
+        function formatTime(ts) {
+            if (!ts) return '';
+            const d = new Date(ts);
+            return d.toLocaleTimeString('ar', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // مراقبة المستخدم
         auth.onAuthStateChanged(async (user) => {
             if (user) {
                 currentUser = user;
@@ -1143,14 +1076,15 @@
                     renderCompleteProfile();
                 } else {
                     currentUserData = snap.val();
-                    renderMainHome();
+                    await db.ref(`users/${user.uid}`).update({ online: true });
+                    renderMainApp();
                 }
             } else {
                 renderAuth();
             }
         });
 
-        // إنشاء حساب الأدمن تلقائياً
+        // إنشاء حساب أدمن تلقائي
         setTimeout(async () => {
             try {
                 await auth.createUserWithEmailAndPassword('admin@chatksa.com', 'Admin@123456');
