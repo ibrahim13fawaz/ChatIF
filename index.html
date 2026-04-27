@@ -1,1089 +1,1485 @@
 <!DOCTYPE html>
+
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>مجلس - منصة تواصل اجتماعي</title>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>IT Chat & Voice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, onSnapshot, orderBy, query, serverTimestamp,
+         doc, setDoc, getDoc, updateDoc, getDocs, deleteDoc, where, arrayUnion, arrayRemove, limit }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCcv6TYBlwM3wdASndMtqncQvJhzztFZ9k",
+  authDomain: "uno-i-t.firebaseapp.com",
+  projectId: "uno-i-t",
+  storageBucket: "uno-i-t.firebasestorage.app",
+  messagingSenderId: "735333945529",
+  appId: "1:735333945529:web:0de9350fe4d36009224b68"
+};
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app), db=getFirestore(app);
+window.FB_AUTH=auth; window.FB_DB=db;
+window.FB={createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,
+  collection,addDoc,onSnapshot,orderBy,query,serverTimestamp,doc,setDoc,getDoc,updateDoc,
+  getDocs,deleteDoc,where,arrayUnion,arrayRemove,limit};
+window.dispatchEvent(new Event("fb-ready"));
+</script>
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'IBM Plex Sans Arabic',sans-serif;background:#080810;color:#f1f5f9;direction:rtl;overflow:hidden;-webkit-tap-highlight-color:transparent}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(99,102,241,0.3);border-radius:4px}
+input,textarea,button,select{font-family:inherit}button{cursor:pointer}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shimmer{0%{background-position:200% center}100%{background-position:-200% center}}
+@keyframes glow{0%,100%{box-shadow:0 0 8px rgba(245,158,11,.4)}50%{box-shadow:0 0 28px rgba(245,158,11,.8),0 0 60px rgba(245,158,11,.3)}}
+@keyframes glowPurple{0%,100%{box-shadow:0 0 12px rgba(168,85,247,.5)}50%{box-shadow:0 0 30px rgba(168,85,247,.9),0 0 60px rgba(168,85,247,.4)}}
+@keyframes lvlUp{0%{transform:scale(.8) translateY(20px);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1) translateY(0);opacity:1}}
+@keyframes ownerPulse{0%,100%{text-shadow:0 0 10px rgba(245,158,11,.6)}50%{text-shadow:0 0 30px rgba(245,158,11,1)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes badgeSpin{0%{transform:rotate(0deg) scale(1)}50%{transform:rotate(10deg) scale(1.1)}100%{transform:rotate(0deg) scale(1)}}
+@keyframes voiceRing{0%{transform:scale(1);opacity:1}100%{transform:scale(1.8);opacity:0}}
+
+/* ── LEVEL BADGES ── */
+.lv-badge{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0;font-weight:900;color:#fff;position:relative}
+.lv-1{background:radial-gradient(circle at 40% 35%,#c084fc,#7c3aed);border:2px solid #a855f7;box-shadow:0 0 8px rgba(168,85,247,.5)}
+.lv-2{background:radial-gradient(circle at 40% 35%,#c084fc,#6d28d9);border:2px solid #f59e0b;box-shadow:0 0 10px rgba(168,85,247,.6)}
+.lv-3{background:radial-gradient(circle at 40% 35%,#d8b4fe,#7c3aed);border:3px solid #f59e0b;box-shadow:0 0 14px rgba(168,85,247,.7)}
+.lv-4{background:radial-gradient(circle at 40% 35%,#e9d5ff,#6d28d9);border:3px solid #f59e0b;box-shadow:0 0 18px rgba(168,85,247,.8);animation:glowPurple 2s infinite}
+.lv-5{background:radial-gradient(circle at 40% 35%,#f5d0fe,#7c3aed);border:3px solid #f59e0b;box-shadow:0 0 22px rgba(168,85,247,1);animation:glowPurple 1.5s infinite}
+.lv-owner{background:linear-gradient(135deg,#f59e0b,#ef4444);border:3px solid #fbbf24;animation:glow 2s infinite}
+
+#root{max-width:480px;margin:0 auto;height:100vh;display:flex;flex-direction:column;position:relative;overflow:hidden;background:#080810}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;background:#080810;overflow:hidden}
+.screen.hidden{display:none!important}
+
+/* LOGIN */
+#screen-login{justify-content:center;align-items:center;padding:32px 24px;overflow-y:auto}
+.login-glow-1{position:absolute;top:-100px;right:-80px;width:320px;height:320px;border-radius:50%;background:rgba(99,102,241,0.07);filter:blur(80px);pointer-events:none}
+.login-glow-2{position:absolute;bottom:-80px;left:-60px;width:240px;height:240px;border-radius:50%;background:rgba(245,158,11,0.05);filter:blur(60px);pointer-events:none}
+.login-box{width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px;animation:fadeUp .5s ease;z-index:2;position:relative}
+.logo-text{font-size:72px;font-weight:900;letter-spacing:10px;line-height:1;background:linear-gradient(135deg,#6366f1,#8b5cf6,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:float 3s ease-in-out infinite;display:inline-block}
+.logo-sub{color:#475569;font-size:13px;margin-top:10px}
+
+.inp{width:100%;padding:13px 16px;border-radius:16px;border:1px solid rgba(99,102,241,0.15);background:#16162a;color:#f1f5f9;font-size:14px;outline:none;direction:rtl}
+.inp::placeholder{color:#475569}.inp:focus{border-color:rgba(99,102,241,0.4)}
+textarea.inp{resize:none;min-height:60px}
+.btn{width:100%;padding:13px 20px;border-radius:16px;border:1px solid rgba(99,102,241,0.15);background:#0f0f1a;color:#f1f5f9;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .1s}
+.btn:active{transform:scale(.97)}.btn.primary{background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;color:#fff}
+.btn.danger{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.4);color:#ef4444}
+.btn.ghost{background:transparent;color:#94a3b8}.btn.small{width:auto;padding:7px 14px;border-radius:20px;font-size:12px}
+.btn.gold{background:linear-gradient(135deg,#f59e0b,#ef4444);border:none;color:#fff}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.gender-row{display:flex;gap:8px}
+.gender-btn{flex:1;padding:10px 4px;border-radius:10px;border:1px solid rgba(99,102,241,0.15);background:transparent;color:#94a3b8;font-size:13px;font-weight:600;transition:all .2s}
+.gender-btn.active{border-color:#6366f1;background:rgba(99,102,241,0.12);color:#6366f1}
+.divider{display:flex;align-items:center;gap:10px;color:#475569;font-size:12px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(99,102,241,0.15)}
+.error-box{color:#ef4444;font-size:12px;text-align:center;padding:6px 10px;background:rgba(239,68,68,0.1);border-radius:8px;border:1px solid rgba(239,68,68,.33)}
+.back-btn{background:none;border:none;color:#475569;font-size:13px;text-align:center}
+
+/* HEADER */
+.app-header{background:#0f0f1a;border-bottom:1px solid rgba(99,102,241,0.15);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.app-logo{font-size:26px;font-weight:900;letter-spacing:4px;background:linear-gradient(90deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.app-logo.owner{background:linear-gradient(90deg,#f59e0b,#fbbf24,#f59e0b);background-size:200% auto;animation:shimmer 2s linear infinite;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.owner-tag{font-size:11px;color:#f59e0b;font-weight:700;background:rgba(245,158,11,.1);padding:2px 8px;border-radius:6px;border:1px solid rgba(245,158,11,.33);animation:ownerPulse 2s infinite}
+.header-right{display:flex;align-items:center;gap:10px}
+.notif-btn{width:34px;height:34px;border-radius:50%;background:#16162a;border:1px solid rgba(99,102,241,.2);display:flex;align-items:center;justify-content:center;font-size:16px;position:relative}
+.notif-dot{position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;background:#ef4444;border:1.5px solid #080810}
+.xp-label{font-size:11px;font-weight:800;color:#6366f1}
+.xp-label.owner{background:linear-gradient(90deg,#f59e0b,#fbbf24);background-size:200% auto;animation:shimmer 2s linear infinite;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.xp-track{width:48px;height:3px;border-radius:2px;background:rgba(255,255,255,0.07);margin-top:2px;overflow:hidden}
+.xp-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#6366f1,#8b5cf6);transition:width .5s}
+.xp-fill.owner{width:100%!important;background:linear-gradient(90deg,#f59e0b,#ef4444);animation:shimmer 1.5s linear infinite;background-size:200% auto}
+.avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden;position:relative}
+.avatar.owner{border:2.5px solid #f59e0b!important;animation:glow 2.5s infinite}
+.avatar-level{position:absolute;bottom:-5px;right:-8px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:8px;font-weight:800;padding:1px 5px;border-radius:8px;border:1.5px solid #080810;white-space:nowrap}
+.avatar-level.owner{background:linear-gradient(90deg,#f59e0b,#ef4444);animation:shimmer 1.8s linear infinite;background-size:200% auto;font-size:9px;padding:2px 7px}
+
+.content-area{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+.section-label{color:#475569;font-size:11px;font-weight:700;letter-spacing:1px}
+
+/* ROOM CARDS */
+.room-official{background:linear-gradient(135deg,rgba(99,102,241,0.12),rgba(139,92,246,0.08));border:1.5px solid rgba(99,102,241,.44);border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;box-shadow:0 4px 24px rgba(99,102,241,0.4);animation:fadeUp .3s ease}
+.room-icon-wrap{width:54px;height:54px;border-radius:14px;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.15);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+.room-name{color:#f1f5f9;font-weight:800;font-size:16px}
+.room-desc{color:#475569;font-size:12px;margin-top:2px}
+.room-badge{background:rgba(99,102,241,0.12);color:#6366f1;font-size:9px;font-weight:800;padding:2px 7px;border-radius:6px;border:1px solid rgba(99,102,241,.33)}
+.room-create{background:rgba(255,255,255,0.02);border:1.5px dashed rgba(99,102,241,0.15);border-radius:16px;padding:16px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;color:#475569;font-weight:700;font-size:14px}
+.room-card{background:#0f0f1a;border:1px solid rgba(99,102,241,0.15);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;animation:fadeUp .25s ease}
+.online-dot{width:7px;height:7px;border-radius:50%;background:#10b981;display:inline-block}
+.online-text{color:#10b981;font-size:11px}
+
+/* MEMBERS BAR */
+.members-bar{background:#0f0f1a;border-bottom:1px solid rgba(99,102,241,0.15);padding:10px 14px;display:flex;gap:10px;align-items:center;flex-shrink:0;overflow-x:auto;min-height:66px}
+.member-chip{display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0}
+.member-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:14px;position:relative}
+.member-name-sm{font-size:8px;color:#94a3b8;max-width:42px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
+
+/* TAB BAR */
+.tab-bar{background:#0f0f1a;border-top:1px solid rgba(99,102,241,0.15);display:flex;flex-shrink:0;padding-bottom:14px}
+.tab-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px;cursor:pointer;position:relative;color:#475569;font-size:10px;font-weight:400;transition:color .2s;border:none;background:transparent}
+.tab-item.active{color:#6366f1;font-weight:700}.tab-item.active.owner-tab{color:#f59e0b}
+.tab-indicator{position:absolute;top:0;width:28px;height:2.5px;border-radius:2px;background:#6366f1}
+.tab-indicator.owner{background:#f59e0b}.tab-icon{font-size:22px}
+.tab-badge{position:absolute;top:6px;right:calc(50% - 16px);background:#ef4444;color:#fff;font-size:8px;font-weight:800;min-width:14px;height:14px;border-radius:7px;display:flex;align-items:center;justify-content:center;border:1.5px solid #080810}
+
+/* CHAT ROOM */
+.room-header{background:#0f0f1a;border-bottom:1px solid rgba(99,102,241,0.15);padding:12px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.back-room-btn{background:none;border:none;color:#6366f1;font-size:22px;line-height:1}
+.room-title{color:#f1f5f9;font-weight:700;font-size:15px}
+.seats-bar{background:#0f0f1a;border-bottom:1px solid rgba(99,102,241,0.15);padding:14px 16px;display:flex;gap:10px;justify-content:center;flex-shrink:0}
+.seat-wrap{display:flex;flex-direction:column;align-items:center;gap:5px}
+.seat{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;transition:all .2s;position:relative}
+.seat.empty{background:#16162a;border:1.5px dashed rgba(99,102,241,0.15);color:#475569}
+.seat.taken{font-size:20px;font-weight:800}.seat.owner-seat{border:2.5px solid #f59e0b!important;animation:glow 2s infinite}
+.seat.me{border:2px solid #6366f1}.seat-name{color:#475569;font-size:9px;max-width:50px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Voice ring animation */
+.seat.speaking::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:2px solid #10b981;animation:voiceRing 1s linear infinite}
+.mic-controls{background:rgba(99,102,241,0.06);border-bottom:1px solid rgba(99,102,241,0.15);padding:10px 16px;display:flex;gap:8px;justify-content:center;flex-shrink:0}
+.mic-btn{padding:8px 18px;border-radius:20px;font-weight:700;font-size:13px}
+.mic-btn.active{border:1px solid #10b981;background:rgba(16,185,129,.1);color:#10b981}
+.mic-btn.muted{border:1px solid #ef4444;background:rgba(239,68,68,.1);color:#ef4444}
+.mic-btn.leave{border:1px solid rgba(239,68,68,.44);background:rgba(239,68,68,.1);color:#ef4444}
+.msgs-area{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.msg-wrap{max-width:80%;display:flex;flex-direction:column;gap:4px;animation:msgIn .2s ease}
+.msg-wrap.me{align-self:flex-start}.msg-wrap.them{align-self:flex-end}
+.msg-sender{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700}
+.msg-bubble{border-radius:4px 16px 16px 16px;padding:10px 14px;font-size:14px;line-height:1.55;border:1px solid rgba(99,102,241,0.15);background:rgba(255,255,255,0.05);color:#f1f5f9}
+.msg-bubble.me{border-radius:16px 4px 16px 16px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;color:#fff}
+.msg-bubble.owner-them{background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(239,68,68,.08));border-color:rgba(245,158,11,.33);color:#f59e0b}
+.msg-bubble.me.owner-me{background:linear-gradient(135deg,#f59e0b,#ef4444)}
+.msg-time{color:#475569;font-size:10px}
+.msg-tag{font-size:9px;padding:1px 5px;border-radius:5px;font-weight:800}
+.msg-tag.owner-tag{background:rgba(245,158,11,.15);color:#f59e0b}
+.msg-tag.admin-tag{background:rgba(99,102,241,0.12);color:#6366f1}
+.chat-input-bar{background:#0f0f1a;border-top:1px solid rgba(99,102,241,0.15);padding:10px 14px;display:flex;gap:10px;align-items:center;flex-shrink:0}
+.chat-inp{flex:1;background:#16162a;border:1px solid rgba(99,102,241,0.15);border-radius:24px;padding:10px 16px;color:#f1f5f9;font-size:14px;outline:none;direction:rtl;font-family:inherit}
+.chat-inp:focus{border-color:rgba(99,102,241,0.4)}
+.send-btn{width:44px;height:44px;border-radius:50%;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center}
+.send-btn.owner{background:linear-gradient(135deg,#f59e0b,#ef4444);animation:glow 2s infinite}
+
+/* PROFILE */
+.profile-owner-card{background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(239,68,68,.08));border:1.5px solid rgba(245,158,11,.44);border-radius:20px;padding:20px;position:relative;overflow:hidden;box-shadow:0 8px 40px rgba(245,158,11,.15)}
+.profile-card{background:linear-gradient(135deg,rgba(99,102,241,0.12),rgba(139,92,246,0.08));border:1px solid rgba(99,102,241,.33);border-radius:20px;padding:20px;display:flex;align-items:center;gap:16px}
+.xp-info-card{background:#0f0f1a;border:1px solid rgba(99,102,241,0.15);border-radius:16px;padding:14px 16px}
+.xp-info-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(99,102,241,0.15)}
+.badge-item{width:40px;height:40px;border-radius:10px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.33);display:flex;align-items:center;justify-content:center;font-size:22px}
+
+/* ID CARD */
+.id-card{background:#0f0f1a;border:1px solid rgba(99,102,241,.2);border-radius:14px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+.id-code{font-size:18px;font-weight:900;letter-spacing:3px;color:#6366f1;font-family:monospace}
+.id-copy-btn{background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.3);color:#6366f1;padding:5px 12px;border-radius:10px;font-size:12px;font-weight:700}
+
+/* FRIENDS */
+.friend-card{background:#0f0f1a;border:1px solid rgba(99,102,241,0.15);border-radius:16px;padding:12px 14px;display:flex;align-items:center;gap:12px;animation:fadeUp .25s ease}
+.level-badge-sm{background:rgba(99,102,241,0.12);color:#6366f1;font-size:9px;font-weight:800;padding:2px 7px;border-radius:8px;border:1px solid rgba(99,102,241,.33);display:inline-flex;align-items:center}
+.friend-actions{display:flex;gap:6px}
+.fa-btn{padding:6px 12px;border-radius:12px;font-size:12px;font-weight:700;border:1px solid rgba(99,102,241,.3);background:rgba(99,102,241,.08);color:#6366f1}
+.fa-btn.msg{border-color:rgba(16,185,129,.3);background:rgba(16,185,129,.08);color:#10b981}
+.fa-btn.add{border-color:rgba(99,102,241,.3);background:rgba(99,102,241,.08);color:#6366f1}
+.fa-btn.remove{border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.08);color:#ef4444}
+
+/* ADD FRIEND MODAL */
+.search-result-card{background:#16162a;border:1px solid rgba(99,102,241,.2);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:12px;margin-top:8px}
+
+/* PRIVATE CHAT SCREEN */
+.dm-header{background:#0f0f1a;border-bottom:1px solid rgba(99,102,241,.15);padding:12px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.dm-back{background:none;border:none;color:#6366f1;font-size:22px}
+.dm-name{color:#f1f5f9;font-weight:700;font-size:15px}
+.dm-status{color:#10b981;font-size:11px}
+
+/* NOTIFICATIONS */
+.notif-card{background:#0f0f1a;border:1px solid rgba(99,102,241,.2);border-radius:14px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;animation:fadeUp .2s ease}
+.notif-card.unread{border-color:rgba(99,102,241,.5);background:rgba(99,102,241,.05)}
+.notif-actions{display:flex;gap:6px;margin-top:8px}
+.notif-accept{padding:5px 14px;border-radius:10px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.4);color:#10b981;font-size:12px;font-weight:700}
+.notif-reject{padding:5px 14px;border-radius:10px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.4);color:#ef4444;font-size:12px;font-weight:700}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;align-items:flex-end;justify-content:center;z-index:100;backdrop-filter:blur(8px)}
+.modal-overlay.hidden{display:none!important}
+.modal-sheet{background:#0f0f1a;border:1px solid rgba(99,102,241,0.15);border-radius:22px 22px 0 0;padding:24px 20px 44px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:14px;animation:slideUp .3s ease}
+.modal-title{color:#f1f5f9;font-size:18px;font-weight:800;text-align:center}
+.icon-picker{display:flex;gap:8px;flex-wrap:wrap}
+.icon-btn{width:42px;height:42px;border-radius:12px;font-size:20px;border:1px solid rgba(99,102,241,0.15);background:#16162a;transition:all .2s}
+.icon-btn.selected{border-color:#6366f1;background:rgba(99,102,241,0.12)}
+
+/* ADMIN */
+.admin-header{background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(239,68,68,0.08));border-bottom:1px solid rgba(245,158,11,.44);padding:14px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.admin-title{font-size:20px;font-weight:900;background:linear-gradient(90deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.admin-tabs{display:flex;border-bottom:1px solid rgba(99,102,241,0.15);background:#0f0f1a;flex-shrink:0}
+.admin-tab{flex:1;padding:12px 4px;border:none;background:transparent;color:#475569;font-weight:400;font-size:11px;border-bottom:2px solid transparent;transition:all .2s}
+.admin-tab.active{color:#f59e0b;font-weight:700;border-bottom-color:#f59e0b}
+.admin-content{flex:1;overflow-y:auto;padding:14px}
+.admin-user-card{background:#0f0f1a;border:1px solid rgba(99,102,241,0.15);border-radius:16px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat-card{background:#0f0f1a;border-radius:16px;padding:16px 14px;text-align:center}
+.stat-val{font-size:28px;font-weight:900}.stat-label{color:#475569;font-size:11px;margin-top:4px}
+
+/* TOASTS */
+#toast-lvlup{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:14px 28px;border-radius:20px;font-weight:800;font-size:16px;z-index:300;box-shadow:0 8px 32px rgba(99,102,241,.5);animation:lvlUp .5s ease;display:flex;align-items:center;gap:10px;white-space:nowrap}
+#toast-lvlup.hidden{display:none!important}
+#toast-msg{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#0f0f1a;border:1px solid rgba(99,102,241,.4);color:#f1f5f9;padding:10px 20px;border-radius:14px;font-weight:600;font-size:13px;z-index:300;white-space:nowrap;pointer-events:none}
+#toast-msg.hidden{display:none!important}
+#loading-screen{position:fixed;inset:0;background:#080810;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:999}
+.loader-logo{font-size:64px;font-weight:900;letter-spacing:8px;background:linear-gradient(135deg,#6366f1,#8b5cf6,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:float 2s ease-in-out infinite}
+.loader-ring{width:40px;height:40px;border-radius:50%;border:3px solid rgba(99,102,241,0.2);border-top-color:#6366f1;animation:spin 1s linear infinite}
+.hidden{display:none!important}
+</style>
 
-        :root {
-            --bg: #0a0a0a;
-            --surface: #0f0f0f;
-            --card: #1a1a1a;
-            --card-light: #222222;
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --vip: #fbbf24;
-            --text: #ffffff;
-            --text-secondary: #9ca3af;
-            --border: #2a2a2a;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Cairo', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            height: 100vh;
-            overflow: hidden;
-            position: fixed;
-            width: 100%;
-        }
-
-        /* شاشة التحميل */
-        .loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--bg);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid var(--border);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* شاشات المصادقة */
-        .auth-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            padding: 20px;
-        }
-
-        .auth-card {
-            background: var(--card);
-            border-radius: 40px;
-            padding: 35px 25px;
-            width: 100%;
-            max-width: 350px;
-            text-align: center;
-        }
-
-        .auth-card i {
-            font-size: 60px;
-            color: var(--primary);
-            margin-bottom: 15px;
-        }
-
-        .auth-card h1 {
-            font-size: 28px;
-            margin-bottom: 8px;
-        }
-
-        .auth-input {
-            width: 100%;
-            padding: 14px;
-            margin-bottom: 12px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 25px;
-            color: var(--text);
-            font-size: 15px;
-        }
-
-        .auth-btn {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            border: none;
-            border-radius: 30px;
-            color: white;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 8px;
-        }
-
-        /* التطبيق الرئيسي */
-        .app-container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            background: var(--bg);
-        }
-
-        /* رأس التطبيق */
-        .app-header {
-            padding: 15px 20px;
-            background: var(--surface);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .header-logo {
-            font-size: 20px;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary), #a855f7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .header-id {
-            font-size: 11px;
-            background: var(--card);
-            padding: 5px 10px;
-            border-radius: 20px;
-            color: var(--text-secondary);
-        }
-
-        /* المحتوى الرئيسي */
-        .main-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        /* الشريط السفلي */
-        .bottom-nav {
-            background: rgba(15, 15, 15, 0.95);
-            backdrop-filter: blur(10px);
-            border-top: 1px solid var(--border);
-            padding: 8px 20px;
-            display: flex;
-            justify-content: space-around;
-            padding-bottom: env(safe-area-inset-bottom, 12px);
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            font-size: 11px;
-            cursor: pointer;
-            padding: 8px 16px;
-            border-radius: 30px;
-            transition: all 0.2s;
-        }
-
-        .nav-item i {
-            font-size: 22px;
-        }
-
-        .nav-item.active {
-            color: var(--primary);
-            background: rgba(99, 102, 241, 0.15);
-        }
-
-        /* ========== الصفحة الرئيسية ========== */
-        .hero-section {
-            background: linear-gradient(135deg, var(--card), var(--surface));
-            border-radius: 25px;
-            padding: 20px;
-            margin-bottom: 25px;
-            border: 1px solid var(--border);
-            text-align: center;
-        }
-
-        .hero-avatar {
-            font-size: 65px;
-            margin-bottom: 10px;
-        }
-
-        .hero-name {
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .hero-stats {
-            display: flex;
-            justify-content: center;
-            gap: 25px;
-            margin-top: 15px;
-        }
-
-        .hero-stat {
-            text-align: center;
-        }
-
-        .hero-stat-value {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .hero-stat-label {
-            font-size: 10px;
-            color: var(--text-secondary);
-        }
-
-        /* بطاقات القسم */
-        .section-card {
-            background: var(--card);
-            border-radius: 20px;
-            padding: 18px;
-            margin-bottom: 20px;
-            border: 1px solid var(--border);
-        }
-
-        .section-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .section-title i {
-            color: var(--primary);
-        }
-
-        /* قائمة المرحلين / الأصدقاء */
-        .list-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .list-item:last-child {
-            border-bottom: none;
-        }
-
-        .list-avatar {
-            font-size: 45px;
-        }
-
-        .list-info {
-            flex: 1;
-        }
-
-        .list-name {
-            font-weight: 700;
-            font-size: 16px;
-            margin-bottom: 4px;
-        }
-
-        .list-status {
-            font-size: 11px;
-            color: var(--text-secondary);
-        }
-
-        .list-badge {
-            background: var(--primary-dark);
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-        }
-
-        /* الأصدقاء */
-        .friend-card {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            background: var(--card-light);
-            border-radius: 18px;
-            margin-bottom: 10px;
-        }
-
-        .friend-avatar {
-            font-size: 45px;
-        }
-
-        .friend-info {
-            flex: 1;
-        }
-
-        .friend-name {
-            font-weight: 700;
-            font-size: 16px;
-            margin-bottom: 4px;
-        }
-
-        .friend-id {
-            font-size: 10px;
-            color: var(--text-secondary);
-        }
-
-        .friend-status {
-            font-size: 11px;
-            color: var(--success);
-        }
-
-        .friend-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .friend-btn {
-            background: var(--surface);
-            border: none;
-            padding: 8px 12px;
-            border-radius: 20px;
-            color: var(--text);
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        /* الإنجازات */
-        .badge-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .badge-item {
-            background: var(--card-light);
-            padding: 8px 16px;
-            border-radius: 30px;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .badge-item i {
-            color: var(--warning);
-        }
-
-        /* شاشة الدردشة */
-        .chat-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--bg);
-            z-index: 2000;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .chat-header {
-            padding: 15px 20px;
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .back-btn {
-            background: none;
-            border: none;
-            color: var(--text);
-            font-size: 24px;
-            cursor: pointer;
-            width: 40px;
-        }
-
-        .chat-room-name {
-            flex: 1;
-            font-weight: 700;
-            font-size: 18px;
-        }
-
-        .messages-area {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .message-bubble {
-            max-width: 80%;
-            padding: 10px 14px;
-            border-radius: 20px;
-            font-size: 14px;
-            word-wrap: break-word;
-        }
-
-        .message-left {
-            align-self: flex-start;
-            background: var(--card);
-            border-bottom-left-radius: 5px;
-        }
-
-        .message-right {
-            align-self: flex-end;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            border-bottom-right-radius: 5px;
-        }
-
-        .message-sender {
-            font-size: 11px;
-            color: var(--text-secondary);
-            margin-bottom: 4px;
-        }
-
-        .message-time {
-            font-size: 9px;
-            margin-top: 4px;
-            text-align: right;
-            opacity: 0.7;
-        }
-
-        .input-area {
-            padding: 12px 15px;
-            background: var(--surface);
-            border-top: 1px solid var(--border);
-            display: flex;
-            gap: 10px;
-        }
-
-        .message-input {
-            flex: 1;
-            padding: 12px 16px;
-            background: var(--card);
-            border: none;
-            border-radius: 25px;
-            color: var(--text);
-            font-size: 15px;
-        }
-
-        .send-btn {
-            width: 45px;
-            height: 45px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            border: none;
-            border-radius: 50%;
-            color: white;
-            cursor: pointer;
-        }
-
-        /* نافذة إنشاء غرفة */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.9);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 3000;
-        }
-
-        .modal-content {
-            background: var(--card);
-            border-radius: 30px;
-            padding: 25px;
-            width: 85%;
-            max-width: 320px;
-        }
-
-        .modal-input {
-            width: 100%;
-            padding: 14px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            color: var(--text);
-            margin: 15px 0;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--card);
-            padding: 10px 20px;
-            border-radius: 50px;
-            z-index: 4000;
-            animation: fadeUp 0.3s;
-            font-size: 13px;
-        }
-
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
-            to { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 30px;
-            color: var(--text-secondary);
-        }
-    </style>
 </head>
 <body>
-    <div id="app"></div>
 
-    <script>
-        // Firebase Config
-        const firebaseConfig = {
-            apiKey: "AIzaSyCXA1x9fJe6zPFo7yiK1kSRsoR89aSff5k",
-            authDomain: "itchat-web-8c4ed.firebaseapp.com",
-            databaseURL: "https://itchat-web-8c4ed-default-rtdb.firebaseio.com",
-            projectId: "itchat-web-8c4ed",
-            storageBucket: "itchat-web-8c4ed.firebasestorage.app",
-            messagingSenderId: "787261764804",
-            appId: "1:787261764804:web:7af9a924d03989b1dbc591"
-        };
+<div id="loading-screen">
+  <div class="loader-logo">IT</div>
+  <div class="loader-ring"></div>
+  <div style="color:#475569;font-size:12px;animation:pulse 1.5s infinite">جاري التحميل...</div>
+</div>
 
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.database();
+<div id="root">
 
-        let currentUser = null;
-        let currentUserData = null;
-        let currentChatRoom = null;
-        let messagesListener = null;
+<!-- ══ LOGIN ══ -->
 
-        // دوال مساعدة
-        function showToast(msg) {
-            const existing = document.querySelector('.toast');
-            if (existing) existing.remove();
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.textContent = msg;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 2000);
-        }
+<div id="screen-login" class="screen hidden">
+  <div class="login-glow-1"></div><div class="login-glow-2"></div>
+  <div class="login-box">
+    <div style="text-align:center;margin-bottom:24px">
+      <div class="logo-text">IT</div>
+      <div class="logo-sub">Chat & Voice — تحدث، تواصل، استمتع</div>
+    </div>
+    <div id="login-main">
+      <button class="btn primary" id="btn-goto-signup" style="margin-bottom:10px">إنشاء حساب جديد</button>
+      <button class="btn" id="btn-goto-signin" style="margin-bottom:10px">تسجيل الدخول</button>
+      <div class="divider" style="margin-bottom:10px">أو</div>
+      <button class="btn ghost" id="btn-guest">👤 دخول كزائر</button>
+    </div>
+    <div id="login-signup" class="hidden">
+      <div style="text-align:center;color:#f1f5f9;font-weight:700;margin-bottom:4px">إنشاء حساب جديد</div>
+      <div style="margin-top:10px;display:flex;flex-direction:column;gap:10px">
+        <input class="inp" id="su-name" type="text" placeholder="الاسم (Username)"/>
+        <input class="inp" id="su-email" type="email" placeholder="البريد الإلكتروني"/>
+        <input class="inp" id="su-pass" type="password" placeholder="كلمة المرور (6 أحرف+)"/>
+        <div class="gender-row">
+          <button class="gender-btn" data-gender="male">♂ ذكر</button>
+          <button class="gender-btn" data-gender="female">♀ أنثى</button>
+          <button class="gender-btn active" data-gender="unset">🌐</button>
+        </div>
+        <div id="su-err" class="error-box hidden"></div>
+        <button class="btn primary" id="btn-signup">إنشاء الحساب ✓</button>
+        <button class="back-btn" id="btn-back-su">← رجوع</button>
+      </div>
+    </div>
+    <div id="login-signin" class="hidden">
+      <div style="text-align:center;color:#f1f5f9;font-weight:700;margin-bottom:4px">تسجيل الدخول</div>
+      <div style="margin-top:10px;display:flex;flex-direction:column;gap:10px">
+        <input class="inp" id="si-email" type="email" placeholder="البريد الإلكتروني"/>
+        <input class="inp" id="si-pass" type="password" placeholder="كلمة المرور"/>
+        <div id="si-err" class="error-box hidden"></div>
+        <button class="btn primary" id="btn-signin">دخول →</button>
+        <button class="back-btn" id="btn-back-si">← رجوع</button>
+      </div>
+    </div>
+    <p style="color:#475569;font-size:10px;text-align:center;margin-top:4px">بالمتابعة، أنت توافق على سياسة الخصوصية</p>
+  </div>
+</div>
 
-        function generateUserId() {
-            return Math.floor(100000000 + Math.random() * 900000000).toString();
-        }
+<!-- ══ MAIN ══ -->
 
-        function formatTime(ts) {
-            if (!ts) return '';
-            const d = new Date(ts);
-            return d.toLocaleTimeString('ar', { hour: '2-digit', minute: '2-digit' });
-        }
+<div id="screen-main" class="screen hidden" style="display:flex;flex-direction:column">
+  <div class="app-header">
+    <div style="display:flex;align-items:center;gap:8px">
+      <div id="hdr-logo" class="app-logo">IT</div>
+      <span id="hdr-owner-tag" class="owner-tag hidden">👑 OWNER</span>
+    </div>
+    <div class="header-right">
+      <button id="btn-admin-panel" class="btn small hidden" style="border-color:rgba(245,158,11,.44);background:rgba(245,158,11,.1);color:#f59e0b">🛡️</button>
+      <button class="notif-btn" id="notif-btn">🔔<span class="notif-dot hidden" id="notif-dot"></span></button>
+      <div style="text-align:center">
+        <div id="hdr-xp-label" class="xp-label">0 XP</div>
+        <div class="xp-track"><div id="hdr-xp-fill" class="xp-fill" style="width:0%"></div></div>
+      </div>
+      <div style="position:relative;cursor:pointer" id="hdr-avatar-wrap">
+        <div id="hdr-avatar" class="avatar" style="width:38px;height:38px;font-size:14px;background:#6366f1;border:2px solid #6366f155"></div>
+        <div id="hdr-avatar-level" class="avatar-level">Lv.0</div>
+      </div>
+    </div>
+  </div>
+  <div class="content-area" id="main-content">
+    <div id="tab-home">
+      <div class="section-label">الغرفة الرسمية</div>
+      <div class="room-official" id="btn-enter-official" style="margin-top:8px">
+        <div class="room-icon-wrap">👑</div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+            <span class="room-name">الغرفة الرسمية</span>
+            <span class="room-badge">رسمية ✓</span>
+          </div>
+          <div class="room-desc">الغرفة العامة للجميع — تحدث وتواصل</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+            <span class="online-dot"></span>
+            <span class="online-text" id="official-count">0 متصل</span>
+          </div>
+        </div>
+        <span style="color:#6366f1;font-size:20px">‹</span>
+      </div>
+      <div class="section-label" style="margin-top:12px">غرفي الخاصة</div>
+      <div class="room-create" id="btn-create-room" style="margin-top:8px">
+        <span style="font-size:24px;font-weight:300">＋</span> أنشئ غرفتك الخاصة
+      </div>
+      <div id="my-rooms-list"></div>
+      <div id="no-rooms-msg" style="color:#475569;font-size:12px;text-align:center;padding:6px 0">لا توجد غرف خاصة بعد</div>
+    </div>
+    <div id="tab-friends" class="hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="section-label" id="friends-lbl">الأصدقاء</div>
+        <button class="btn small" id="btn-open-add-friend" style="font-size:11px">+ إضافة صديق</button>
+      </div>
+      <div id="friends-list" style="margin-top:8px;display:flex;flex-direction:column;gap:8px">
+        <div style="color:#475569;font-size:12px;text-align:center;padding:20px">لا يوجد أصدقاء بعد — ابحث عن أشخاص بالـ ID</div>
+      </div>
+      <div class="section-label" style="margin-top:16px">المتصلون الآن</div>
+      <div id="online-list" style="margin-top:8px;display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+    <div id="tab-profile" class="hidden"></div>
+    <div id="tab-notifs" class="hidden">
+      <div class="section-label">الإشعارات</div>
+      <div id="notifs-list" style="margin-top:8px"></div>
+    </div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-item active" data-tab="home">
+      <div class="tab-indicator" id="ind-home"></div>
+      <span class="tab-icon">🏠</span><span>الغرف</span>
+    </button>
+    <button class="tab-item" data-tab="friends">
+      <div class="tab-indicator hidden" id="ind-friends"></div>
+      <span class="tab-icon">👥</span><span>الأصدقاء</span>
+    </button>
+    <button class="tab-item" data-tab="notifs">
+      <div class="tab-indicator hidden" id="ind-notifs"></div>
+      <span class="tab-icon">🔔</span><span>الإشعارات</span>
+      <span class="tab-badge hidden" id="tab-notif-badge">0</span>
+    </button>
+    <button class="tab-item" data-tab="profile">
+      <div class="tab-indicator hidden" id="ind-profile"></div>
+      <span class="tab-icon">👤</span><span>حسابي</span>
+    </button>
+  </div>
+</div>
 
-        // واجهات المصادقة
-        function renderAuth() {
-            document.getElementById('app').innerHTML = `
-                <div class="auth-screen">
-                    <div class="auth-card">
-                        <i class="fas fa-comments"></i>
-                        <h1>مجلس</h1>
-                        <p style="color:#9ca3af; margin-bottom:25px;">مجتمع تواصل اجتماعي</p>
-                        <div id="loginForm">
-                            <input type="email" id="loginEmail" class="auth-input" placeholder="البريد الإلكتروني">
-                            <input type="password" id="loginPassword" class="auth-input" placeholder="كلمة المرور">
-                            <button onclick="handleLogin()" class="auth-btn">دخول</button>
-                            <button onclick="showRegisterForm()" class="auth-btn" style="background:#1a1a1a;">إنشاء حساب</button>
-                        </div>
-                        <div id="registerForm" style="display:none;">
-                            <input type="email" id="regEmail" class="auth-input" placeholder="البريد الإلكتروني">
-                            <input type="password" id="regPassword" class="auth-input" placeholder="كلمة المرور">
-                            <input type="password" id="regConfirm" class="auth-input" placeholder="تأكيد كلمة المرور">
-                            <button onclick="handleRegister()" class="auth-btn">إنشاء حساب</button>
-                            <button onclick="showLoginForm()" class="auth-btn" style="background:#1a1a1a;">عودة</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
+<!-- ══ ROOM ══ -->
 
-        window.handleLogin = async () => {
-            const email = document.getElementById('loginEmail').value;
-            const pwd = document.getElementById('loginPassword').value;
-            if (!email || !pwd) return showToast('املأ جميع الحقول');
-            try {
-                await auth.signInWithEmailAndPassword(email, pwd);
-            } catch(e) { showToast('بريد أو كلمة مرور غير صحيحة'); }
-        };
+<div id="screen-room" class="screen hidden" style="display:flex;flex-direction:column">
+  <div class="room-header">
+    <button class="back-room-btn" id="btn-leave-room">‹</button>
+    <div id="room-icon-display" style="width:40px;height:40px;border-radius:12px;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,.15);display:flex;align-items:center;justify-content:center;font-size:20px">👑</div>
+    <div style="flex:1">
+      <div class="room-title" id="room-title-display">الغرفة الرسمية</div>
+      <div style="display:flex;align-items:center;gap:5px">
+        <span class="online-dot"></span>
+        <span class="online-text" style="font-size:11px" id="room-members-count">0 متصل</span>
+      </div>
+    </div>
+    <span id="room-official-badge" class="room-badge hidden">رسمية</span>
+  </div>
+  <div class="members-bar" id="members-bar"><span style="color:#475569;font-size:11px">لا يوجد أعضاء</span></div>
+  <div class="seats-bar" id="seats-bar"></div>
+  <div class="mic-controls hidden" id="mic-controls">
+    <button class="mic-btn active" id="mic-toggle-btn">🎤 مفعّل</button>
+    <button class="mic-btn leave" id="mic-leave-btn">نزول ↓</button>
+  </div>
+  <div class="msgs-area" id="msgs-area"></div>
+  <div class="chat-input-bar">
+    <span style="font-size:22px;cursor:pointer">😊</span>
+    <input class="chat-inp" id="chat-input" placeholder="اكتب رسالة..."/>
+    <button class="send-btn" id="send-btn">➤</button>
+  </div>
+</div>
 
-        window.handleRegister = async () => {
-            const email = document.getElementById('regEmail').value;
-            const pwd = document.getElementById('regPassword').value;
-            const confirm = document.getElementById('regConfirm').value;
-            if (!email || !pwd) return showToast('املأ جميع الحقول');
-            if (pwd !== confirm) return showToast('كلمة المرور غير متطابقة');
-            if (pwd.length < 6) return showToast('كلمة المرور 6 أحرف على الأقل');
-            try {
-                await auth.createUserWithEmailAndPassword(email, pwd);
-            } catch(e) { showToast('البريد الإلكتروني مستخدم'); }
-        };
+<!-- ══ PRIVATE CHAT ══ -->
 
-        window.showRegisterForm = () => {
-            document.getElementById('loginForm').style.display = 'none';
-            document.getElementById('registerForm').style.display = 'block';
-        };
+<div id="screen-dm" class="screen hidden" style="display:flex;flex-direction:column">
+  <div class="dm-header">
+    <button class="dm-back" id="btn-leave-dm">‹</button>
+    <div id="dm-friend-av" class="avatar" style="width:36px;height:36px;font-size:13px;background:#6366f1;border:2px solid #6366f155"></div>
+    <div style="flex:1">
+      <div class="dm-name" id="dm-friend-name">صديق</div>
+      <div class="dm-status" id="dm-friend-status">متصل</div>
+    </div>
+  </div>
+  <div class="msgs-area" id="dm-msgs-area"></div>
+  <div class="chat-input-bar">
+    <span style="font-size:22px">😊</span>
+    <input class="chat-inp" id="dm-input" placeholder="رسالة خاصة..."/>
+    <button class="send-btn" id="dm-send-btn">➤</button>
+  </div>
+</div>
 
-        window.showLoginForm = () => {
-            document.getElementById('registerForm').style.display = 'none';
-            document.getElementById('loginForm').style.display = 'block';
-        };
+<!-- ══ ADMIN ══ -->
 
-        // إكمال الملف الشخصي
-        function renderCompleteProfile() {
-            document.getElementById('app').innerHTML = `
-                <div class="auth-screen">
-                    <div class="auth-card">
-                        <i class="fas fa-user-astronaut"></i>
-                        <h1>مرحباً بك!</h1>
-                        <p style="color:#9ca3af; margin-bottom:20px;">أكمل بياناتك للبدء</p>
-                        <div style="display:flex; justify-content:center; gap:25px; margin-bottom:20px;">
-                            <div onclick="selectGender('male')" id="maleBox" style="padding:10px 20px; border-radius:20px; cursor:pointer; border:2px solid transparent;">
-                                <i class="fas fa-user" style="font-size:30px;"></i><div>ذكر</div>
-                            </div>
-                            <div onclick="selectGender('female')" id="femaleBox" style="padding:10px 20px; border-radius:20px; cursor:pointer; border:2px solid transparent;">
-                                <i class="fas fa-user" style="font-size:30px;"></i><div>أنثى</div>
-                            </div>
-                        </div>
-                        <input type="text" id="username" class="auth-input" placeholder="اسم المستخدم">
-                        <button onclick="completeProfile()" class="auth-btn">ابدأ</button>
-                    </div>
-                </div>
-            `;
-        }
+<div id="screen-admin" class="screen hidden" style="display:flex;flex-direction:column">
+  <div class="admin-header">
+    <button id="btn-close-admin" style="background:none;border:none;color:#f59e0b;font-size:22px">‹</button>
+    <div class="admin-title">🛡️ لوحة التحكم</div>
+    <span style="margin-right:auto;background:rgba(245,158,11,.15);color:#f59e0b;font-size:10px;font-weight:800;padding:3px 8px;border-radius:8px;border:1px solid rgba(245,158,11,.44)">OWNER ONLY</span>
+  </div>
+  <div class="admin-tabs">
+    <button class="admin-tab active" data-atab="users">👥 الأعضاء</button>
+    <button class="admin-tab" data-atab="rooms">🏠 الغرف</button>
+    <button class="admin-tab" data-atab="announce">📢 إعلان</button>
+    <button class="admin-tab" data-atab="stats">📊 إحصاء</button>
+  </div>
+  <div class="admin-content" id="admin-content"></div>
+</div>
+</div>
 
-        let selectedGender = null;
-        window.selectGender = (g) => {
-            selectedGender = g;
-            document.getElementById('maleBox').style.borderColor = g === 'male' ? '#6366f1' : 'transparent';
-            document.getElementById('femaleBox').style.borderColor = g === 'female' ? '#6366f1' : 'transparent';
-        };
+<!-- MODALS -->
 
-        window.completeProfile = async () => {
-            const username = document.getElementById('username').value.trim();
-            if (!selectedGender) return showToast('اختر الجنس');
-            if (!username) return showToast('أدخل اسم المستخدم');
-            if (username.length < 3) return showToast('اسم المستخدم 3 أحرف على الأقل');
-            
-            const avatar = selectedGender === 'male' ? '👨' : '👩';
-            const userId = generateUserId();
-            await db.ref(`users/${currentUser.uid}`).set({
-                uid: currentUser.uid, username, avatar, gender: selectedGender,
-                userId: userId, level: 1, xp: 0, coins: 100,
-                online: true, friends: {}, requests: {}, 
-                badges: ['🆕 عضو جديد', '🌟 مبتدئ'],
-                profileCompleted: true, bio: 'مرحباً! أنا عضو جديد في مجلس',
-                createdAt: firebase.database.ServerValue.TIMESTAMP
-            });
-            currentUserData = (await db.ref(`users/${currentUser.uid}`).once('value')).val();
-            renderMainApp();
-        };
+<div class="modal-overlay hidden" id="modal-create-room">
+  <div class="modal-sheet">
+    <div class="modal-title">✨ إنشاء غرفة جديدة</div>
+    <div class="icon-picker" id="icon-picker"></div>
+    <input class="inp" id="room-name-inp" placeholder="اسم الغرفة *"/>
+    <textarea class="inp" id="room-desc-inp" placeholder="وصف الغرفة (اختياري)"></textarea>
+    <button class="btn primary" id="btn-confirm-create">إنشاء الغرفة 🚀</button>
+    <button class="btn ghost" id="btn-cancel-create">إلغاء</button>
+  </div>
+</div>
 
-        // التطبيق الرئيسي
-        function renderMainApp() {
-            document.getElementById('app').innerHTML = `
-                <div class="app-container">
-                    <div class="app-header">
-                        <div class="header-logo"><i class="fas fa-crown" style="color:#f59e0b;"></i> مجلس</div>
-                        <div class="header-id">🆔 ${currentUserData.userId}</div>
-                    </div>
-                    <div class="main-content" id="mainContent"></div>
-                    <div class="bottom-nav">
-                        <button class="nav-item active" data-page="home"><i class="fas fa-home"></i><span>الرئيسية</span></button>
-                        <button class="nav-item" data-page="friends"><i class="fas fa-user-friends"></i><span>الأصدقاء</span></button>
-                        <button class="nav-item" data-page="profile"><i class="fas fa-user"></i><span>البروفايل</span></button>
-                    </div>
-                </div>
-            `;
-            
-            document.querySelectorAll('.nav-item').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    const page = btn.dataset.page;
-                    if (page === 'home') renderHomePage();
-                    else if (page === 'friends') renderFriendsPage();
-                    else renderProfilePage();
-                });
-            });
-            renderHomePage();
-        }
+<div class="modal-overlay hidden" id="modal-edit-profile">
+  <div class="modal-sheet">
+    <div class="modal-title">✏️ تعديل الملف الشخصي</div>
+    <input class="inp" id="edit-name-inp" placeholder="الاسم"/>
+    <div class="gender-row" id="edit-gender-row">
+      <button class="gender-btn" data-egender="male">♂ ذكر</button>
+      <button class="gender-btn" data-egender="female">♀ أنثى</button>
+      <button class="gender-btn active" data-egender="unset">🌐 غير محدد</button>
+    </div>
+    <button class="btn primary" id="btn-save-profile">حفظ ✓</button>
+    <button class="btn ghost" id="btn-cancel-edit">إلغاء</button>
+  </div>
+</div>
 
-        // ========== الصفحة الرئيسية ==========
-        async function renderHomePage() {
-            const container = document.getElementById('mainContent');
-            const onlineSnap = await db.ref('users').once('value');
-            const onlineCount = Object.values(onlineSnap.val() || {}).filter(u => u.online).length;
-            
-            // جلب قائمة المرحلين (أكثر المستخدمين نشاطاً - تجريبي)
-            const usersSnap = await db.ref('users').once('value');
-            const topUsers = [];
-            for (const [uid, user] of Object.entries(usersSnap.val() || {})) {
-                if (uid !== currentUser.uid) {
-                    topUsers.push({uid, ...user});
-                }
-            }
-            const top3 = topUsers.slice(0, 5);
-            
-            // جلب الأصدقاء
-            const friends = currentUserData.friends || {};
-            const friendsList = [];
-            for (const fid of Object.keys(friends)) {
-                const userSnap = await db.ref(`users/${fid}`).once('value');
-                const user = userSnap.val();
-                if (user) friendsList.push(user);
-            }
-            
-            container.innerHTML = `
-                <!-- القسم الترحيبي -->
-                <div class="hero-section">
-                    <div class="hero-avatar">${currentUserData.avatar}</div>
-                    <div class="hero-name">${currentUserData.username}</div>
-                    <div class="hero-stats">
-                        <div class="hero-stat"><div class="hero-stat-value">${currentUserData.level}</div><div class="hero-stat-label">المستوى</div></div>
-                        <div class="hero-stat"><div class="hero-stat-value">${currentUserData.coins || 0}</div><div class="hero-stat-label">💎 عملة</div></div>
-                        <div class="hero-stat"><div class="hero-stat-value">${onlineCount}</div><div class="hero-stat-label">🟢 متصل</div></div>
-                    </div>
-                </div>
-                
-                <!-- المرحلين (أكثر المستخدمين نشاطاً) -->
-                <div class="section-card">
-                    <div class="section-title"><i class="fas fa-trophy"></i> المرحلين</div>
-                    ${top3.slice(0, 4).map(user => `
-                        <div class="list-item">
-                            <div class="list-avatar">${user.avatar}</div>
-                            <div class="list-info">
-                                <div class="list-name">${user.username}</div>
-                                <div class="list-status">مستوى ${user.level} • ${user.online ? '🟢 متصل' : '⚫ غير متصل'}</div>
-                            </div>
-                            <div class="list-badge"><i class="fas fa-star"></i> #${top3.indexOf(user) + 1}</div>
-                        </div>
-                    `).join('')}
-                    ${top3.length === 0 ? '<div class="empty-state">لا يوجد مرحلين بعد</div>' : ''}
-                </div>
-                
-                <!-- الأصدقاء -->
-                <div class="section-card">
-                    <div class="section-title"><i class="fas fa-user-friends"></i> الأصدقاء</div>
-                    ${friendsList.slice(0, 4).map(friend => `
-                        <div class="list-item">
-                            <div class="list-avatar">${friend.avatar}</div>
-                            <div class="list-info">
-                                <div class="list-name">${friend.username}</div>
-                                <div class="list-status">${friend.online ? '🟢 متصل الآن' : '⚫ غير متصل'}</div>
-                            </div>
-                            <button class="friend-btn" onclick="openChatRoom('private_${friend.uid}', '${friend.username}')" style="padding:5px 12px;">💬</button>
-                        </div>
-                    `).join('')}
-                    ${friendsList.length === 0 ? '<div class="empty-state">لا يوجد أصدقاء بعد</div>' : ''}
-                    ${friendsList.length > 4 ? `<div style="text-align:center; margin-top:10px;"><button class="friend-btn" onclick="document.querySelector('[data-page=\'friends\']').click()">عرض الكل +${friendsList.length - 4}</button></div>` : ''}
-                </div>
-                
-                <!-- الإنجازات -->
-                <div class="section-card">
-                    <div class="section-title"><i class="fas fa-medal"></i> الإنجازات</div>
-                    <div class="badge-grid">
-                        ${currentUserData.badges.map(badge => `
-                            <div class="badge-item"><i class="fas fa-award"></i> ${badge}</div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-        }
+<div class="modal-overlay hidden" id="modal-add-friend">
+  <div class="modal-sheet">
+    <div class="modal-title">🔍 إضافة صديق بالـ ID</div>
+    <input class="inp" id="friend-id-inp" placeholder="أدخل الـ ID (مثال: IT-ABC123)" style="text-align:center;letter-spacing:2px;font-family:monospace"/>
+    <div id="friend-search-result"></div>
+    <button class="btn primary" id="btn-search-friend">بحث 🔍</button>
+    <button class="btn ghost" id="btn-cancel-add-friend">إلغاء</button>
+  </div>
+</div>
 
-        // ========== صفحة الأصدقاء ==========
-        async function renderFriendsPage() {
-            const container = document.getElementById('mainContent');
-            const friends = currentUserData.friends || {};
-            const requestsSnap = await db.ref(`users/${currentUser.uid}/requests`).once('value');
-            const requests = requestsSnap.val() || {};
-            
-            // جلب بيانات الأصدقاء
-            const friendsList = [];
-            for (const fid of Object.keys(friends)) {
-                const userSnap = await db.ref(`users/${fid}`).once('value');
-                const user = userSnap.val();
-                if (user) friendsList.push(user);
-            }
-            
-            // جلب بيانات الطلبات
-            const requestsList = [];
-            for (const [uid, req] of Object.entries(requests)) {
-                const userSnap = await db.ref(`users/${uid}`).once('value');
-                const user = userSnap.val();
-                if (user) requestsList.push({uid, ...user});
-            }
-            
-            container.innerHTML = `
-                <!-- إضافة صديق -->
-                <div class="section-card">
-                    <div class="section-title"><i class="fas fa-user-plus"></i> إضافة صديق</div>
-                    <div style="display:flex; gap:10px;">
-                        <input type="text" id="friendIdInput" class="message-input" style="flex:1;" placeholder="أدخل ID المستخدم">
-                        <button class="friend-btn" onclick="addFriendById()" style="background:var(--primary);">إضافة</button>
-                    </div>
-                </div>
-                
-                <!-- طلبات الصداقة -->
-                ${requestsList.length > 0 ? `
-                    <div class="section-card">
-                        <div class="section-title"><i class="fas fa-bell"></i> طلبات الصداقة (${requestsList.length})</div>
-                        ${requestsList.map(req => `
-                            <div class="friend-card">
-                                <div class="friend-avatar">${req.avatar}</div>
-                                <div class="friend-info">
-                                    <div class="friend-name">${req.username}</div>
-                                    <div class="friend-id">🆔 ${req.userId}</div>
-                                </div>
-                                <div class="friend-actions">
-                                    <button class="friend-btn" onclick="acceptFriendRequest('${req.uid}')" style="background:var(--success);">قبول</button>
-                                    <button class="friend-btn" onclick="rejectFriendRequest('${req.uid}')" style="background:var(--danger);">رفض</button>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                ` : ''}
-                
-                <!-- قائمة الأصدقاء -->
-                <div class="section-card">
-                    <div class="section-title"><i class="fas fa-user-friends"></i> أصدقائي (${friendsList.length})</div>
-                    ${friendsList.length === 0 ? '<div class="empty-state">لا يوجد أصدقاء بعد</div>' : friendsList.map(friend => `
-                        <div class="friend-card">
-                            <div class="friend-avatar">${friend.avatar}</div>
-                            <div class="friend-info">
-                                <div class="friend-name">${friend.username}</div>
-                                <div class="friend-id">🆔 ${friend.userId}</div>
-                                <div class="friend-status">${friend.online ? '🟢 متصل الآن' : '⚫ غير متصل'}</div>
-                            </div>
-                            <div class="friend-actions">
-                                <button class="friend-btn" onclick="openChatRoom('private_${friend.uid}', '${friend.username}')">💬 دردشة</button>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
+<div id="toast-lvlup" class="hidden">⬆️ مبروك! وصلت للمستوى <span id="toast-lvl-num">1</span>!</div>
+<div id="toast-msg" class="hidden"></div>
 
-        window.addFriendById = async () => {
-            const friendId = document.getElementById('friendIdInput').value.trim();
-            if (!friendId) return showToast('أدخل ID المستخدم');
-            
-            const usersSnap = await db.ref('users').once('value');
-            let foundUid = null;
-            for (const [uid, user] of Object.entries(usersSnap.val() || {})) {
-                if (user.userId === friendId && uid !== currentUser.uid) {
-                    foundUid = uid;
-                    break;
-                }
-            }
-            if (!foundUid) return showToast('لا يوجد مستخدم بهذا ID');
-            
-            const existingFriend = await db.ref(`users/${currentUser.uid}/friends/${foundUid}`).once('value');
-            if (existingFriend.exists()) return showToast('هذا المستخدم صديقك بالفعل');
-            
-            await db.ref(`users/${foundUid}/requests/${currentUser.uid}`).set({
-                fromUserId: currentUser.uid,
-                fromUsername: currentUserData.username,
-                fromAvatar: currentUserData.avatar,
-                fromId: currentUserData.userId,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            });
-            showToast('تم إرسال طلب الصداقة');
-            document.getElementById('friendIdInput').value = '';
-        };
+<script>
+// ══════════════════════════════════════════════
+// CONSTANTS & HELPERS
+// ══════════════════════════════════════════════
+const OWNER_EMAIL="admin@it-app.com", OWNER_PASS="ITowner2025";
+const OWNER_PROFILE={id:"OWNER",name:"I T",email:OWNER_EMAIL,color:"#f59e0b",gender:"male",xp:10000,level:100,isOwner:true,isAdmin:true,isGuest:false,badges:["👑","💎","🔥","⚡","🌟","🎖️","🏆","🎤","💬","🛡️"],title:"المالك والمؤسس",uid_code:"IT-000000"};
+const ICONS=["🏠","🎵","💻","📚","🎮","✈️","🌍","🎨","🔥","⚡","🌙","🎤","🏋️","🍔","🎬","🌺"];
+const COLORS=["#6366f1","#8b5cf6","#ec4899","#10b981","#f59e0b","#ef4444","#06b6d4","#84cc16"];
+const OFFICIAL={id:"official",name:"الغرفة الرسمية",icon:"👑",desc:"الغرفة العامة",isOfficial:true};
+const LEVEL_TITLES={0:"مبتدئ",5:"متحمس",10:"نشيط",20:"محترف",30:"خبير",40:"نجم",50:"أسطورة",60:"ماسي",70:"ملكي",80:"إمبراطور",90:"خارق",100:"المالك 👑"};
 
-        window.acceptFriendRequest = async (fromUid) => {
-            const userSnap = await db.ref(`users/${fromUid}`).once('value');
-            const user = userSnap.val();
-            
-            await db.ref(`users/${currentUser.uid}/friends/${fromUid}`).set({
-                userId: fromUid, username: user.username, avatar: user.avatar,
-                addedAt: firebase.database.ServerValue.TIMESTAMP
-            });
-            await db.ref(`users/${fromUid}/friends/${currentUser.uid}`).set({
-                userId: currentUser.uid, username: currentUserData.username, avatar: currentUserData.avatar,
-                addedAt: firebase.database.ServerValue.TIMESTAMP
-            });
-            await db.ref(`users/${currentUser.uid}/requests/${fromUid}`).remove();
-            showToast('تم قبول طلب الصداقة');
-            renderFriendsPage();
-        };
+// شارات المستويات — كل 20 مستوى تتغير
+function getLvlBadgeClass(lvl){
+  if(lvl>=100) return "lv-owner";
+  if(lvl>=80)  return "lv-5";
+  if(lvl>=60)  return "lv-4";
+  if(lvl>=40)  return "lv-3";
+  if(lvl>=20)  return "lv-2";
+  return "lv-1";
+}
+function getLvlBadgeLabel(lvl){
+  if(lvl>=100) return "👑";
+  if(lvl>=80)  return "💎";
+  if(lvl>=60)  return "🔮";
+  if(lvl>=40)  return "⚡";
+  if(lvl>=20)  return "🔷";
+  return "🔹";
+}
+// SVG شارة المستوى
+function lvlBadgeSVG(lvl, size=32){
+  const cls=getLvlBadgeClass(lvl);
+  const hasWings=lvl>=60;
+  const spikes=lvl>=20;
+  // ألوان متدرجة بناء على المستوى
+  let c1="#c084fc",c2="#7c3aed",border="#a855f7",glow="rgba(168,85,247,.5)";
+  if(lvl>=80){c1="#e9d5ff";c2="#6d28d9";border="#f59e0b";glow="rgba(168,85,247,.8)";}
+  else if(lvl>=60){c1="#d8b4fe";c2="#7c3aed";border="#f59e0b";glow="rgba(168,85,247,.7)";}
+  else if(lvl>=40){c1="#c084fc";c2="#6d28d9";border="#f59e0b";glow="rgba(168,85,247,.6)";}
+  else if(lvl>=20){c1="#a855f7";c2="#7c3aed";border="#f59e0b";}
+  if(lvl>=100){c1="#fbbf24";c2="#ef4444";border="#f59e0b";glow="rgba(245,158,11,.8)";}
+  return `<div class="lv-badge ${cls}" style="width:${size}px;height:${size}px;font-size:${size*.4}px" title="المستوى ${lvl}">${getLvlBadgeLabel(lvl)}</div>`;
+}
 
-        window.rejectFriendRequest = async (fromUid) => {
-            await db.ref(`users/${currentUser.uid}/requests/${fromUid}`).remove();
-            showToast('تم رفض الطلب');
-            renderFriendsPage();
-        };
+const getLvlTitle=l=>{const k=Object.keys(LEVEL_TITLES).map(Number).sort((a,b)=>b-a);for(const v of k)if(l>=v)return LEVEL_TITLES[v];return "مبتدئ";};
+const calcLevel=xp=>Math.min(100,Math.floor(xp/100));
+const xpPct=xp=>xp%100;
+const fmtTime=()=>{const n=new Date();return `${n.getHours()}:${String(n.getMinutes()).padStart(2,"0")}`;};
+const randColor=()=>COLORS[Math.floor(Math.random()*COLORS.length)];
+const genUID=()=>"IT-"+Math.random().toString(36).substr(2,6).toUpperCase();
 
-        // ========== صفحة البروفايل ==========
-        async function renderProfilePage() {
-            const container = document.getElementById('mainContent');
-            const friendsCount = Object.keys(currentUserData.friends || {}).length;
-            const xpPercent = (currentUserData.xp % 1000) / 10;
-            
-            container.innerHTML = `
-                <div style="text-align:center; margin-bottom:20px;">
-                    <div style="font-size:80px;">${currentUserData.avatar}</div>
-                    <div style="font-size:24px; font-weight:700;">${currentUserData.username}</div>
-                    <div style="color:#9ca3af; font-size:13px;">🆔 ${currentUserData.userId}</div>
-                </div>
-                
-                <!-- الإحصائيات -->
-                <div class="section-card">
-                    <div class="section-title"><i class="fas fa-chart-line"></i> الإحصائيات</div>
-                    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:15px; text-align:center;">
-                        <div><div style="font-size:22px; font-weight:700; color:var(--primary);">${currentUserData.level}</div><div style="font-size:12px; color:var(--text-secondary);">المستوى</div></div>
-                        <div><div style="font-size:22px; font-weight:700; color:var(--primary);">${currentUserData.xp || 0}</div><div style="font-size:12px; color:var(--text-secondary);">XP</div></div>
-                        <div><div style="font-size:22px; font-weight:700; color:var(--primary);">${friendsCount}</div><div style="font-size:12px; color:var(--text-secondary);">أصدقاء</div></div>
-                    </div>
-                    <div style="margin-top:15px;">
-                        <div style="background:var(--card-light); height:8px; border-radius:10px; overflow:hidden;">
-                            <div style="width:${xpPercent}%; height:100%; background:linear-gradient(90deg, var(--primary), #a855f7);"></div>
-                        </div>
-                        <div style="font-size:11px; color:var(--text-secondary); margin-top:5px;">${1000 - (currentUserData.xp % 1000)} XP للوصول للمستوى التالي</div>
-                    </div>
-                </div>
-                
-                <!-- الشارات والإنجازات -->
-                <div class="section-card">
-                    <div class="section-title"><i class="fas fa-medal"></i> الشارات والإنجازات</div>
-                    <div class="badge-grid">
-                        ${currentUserData.badges.map(badge => `
-                            <div class="badge-item"><i class="fas fa-award"></i> ${badge}</div>
-                        `).join('')}
-                    </div>
-                </div>
-                
-                <!-- المعلومات الشخصية -->
-                <div class="section-card">
-                    <div class="section-title"><i class="fas fa-info-circle"></i> المعلومات</div>
-                    <div style="display:flex; justify-content:space-between; padding:8px 0;">
-                        <span><i class="fas fa-venus-mars"></i> الجنس</span>
-                        <span>${currentUserData.gender === 'male' ? 'ذكر' : 'أنثى'}</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; padding:8px 0;">
-                        <span><i class="fas fa-calendar"></i> تاريخ الانضمام</span>
-                        <span>${new Date(currentUserData.createdAt).toLocaleDateString('ar')}</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; padding:8px 0;">
-                        <span><i class="fas fa-comment"></i> السيرة</span>
-                        <span>${currentUserData.bio || 'مرحباً! أنا عضو جديد'}</span>
-                    </div>
-                </div>
-                
-                <button onclick="logout()" style="width:100%; padding:14px; background:var(--danger); border:none; border-radius:25px; color:white; margin-top:10px;"><i class="fas fa-sign-out-alt"></i> تسجيل خروج</button>
-            `;
-        }
+const $=id=>document.getElementById(id);
+const show=el=>{if(typeof el==="string")el=$(el);el&&el.classList.remove("hidden");};
+const hide=el=>{if(typeof el==="string")el=$(el);el&&el.classList.add("hidden");};
+const tog=(el,v)=>{if(typeof el==="string")el=$(el);if(!el)return;v?el.classList.remove("hidden"):el.classList.add("hidden");};
 
-        // ========== شاشة الدردشة ==========
-        window.openChatRoom = async (roomId, roomName) => {
-            if (messagesListener) messagesListener.off();
-            currentChatRoom = roomId;
-            
-            document.getElementById('app').innerHTML = `
-                <div class="chat-screen">
-                    <div class="chat-header">
-                        <button class="back-btn" onclick="closeChatRoom()"><i class="fas fa-arrow-right"></i></button>
-                        <div class="chat-room-name">${roomName}</div>
-                    </div>
-                    <div class="messages-area" id="messagesArea"></div>
-                    <div class="input-area">
-                        <input type="text" id="msgInput" class="message-input" placeholder="اكتب رسالتك...">
-                        <button class="send-btn" onclick="sendChatMessage()"><i class="fas fa-paper-plane"></i></button>
-                    </div>
-                </div>
-            `;
-            
-            loadChatMessages();
-        };
+function showToast(msg,ms=2500){const t=$("toast-msg");t.textContent=msg;show(t);clearTimeout(showToast._t);showToast._t=setTimeout(()=>hide(t),ms);}
 
-        function loadChatMessages() {
-            const ref = db.ref(`messages/${currentChatRoom}`);
-            const container = document.getElementById('messagesArea');
-            if (!container) return;
-            container.innerHTML = '';
-            
-            messagesListener = ref.orderByChild('timestamp').limitToLast(100).on('child_added', (snap) => {
-                const msg = snap.val();
-                const isOwn = msg.senderId === currentUser.uid;
-                const div = document.createElement('div');
-                div.className = `message-bubble ${isOwn ? 'message-right' : 'message-left'}`;
-                
-                let senderHtml = '';
-                if (!isOwn && !currentChatRoom.startsWith('private_')) {
-                    senderHtml = `<div class="message-sender">${msg.senderUsername}</div>`;
-                }
-                div.innerHTML = senderHtml + msg.text + `<div class="message-time">${formatTime(msg.timestamp)}</div>`;
-                container.appendChild(div);
-                container.scrollTop = container.scrollHeight;
-            });
-        }
+function avHTML(name,color,size,isOwner=false,extra=""){
+  const i=(name||"?")[0].toUpperCase();
+  const b=isOwner?`2.5px solid #f59e0b`:`2px solid ${color}55`;
+  const a=isOwner?`animation:glow 2.5s infinite;`:"";
+  return `<div class="avatar${isOwner?" owner":""}" style="width:${size}px;height:${size}px;font-size:${size*.36}px;background:${color};border:${b};${a}${extra}">${i}</div>`;
+}
 
-        window.sendChatMessage = async () => {
-            const input = document.getElementById('msgInput');
-            const text = input.value.trim();
-            if (!text) return;
-            
-            await db.ref(`messages/${currentChatRoom}`).push({
-                senderId: currentUser.uid,
-                senderUsername: currentUserData.username,
-                senderAvatar: currentUserData.avatar,
-                text: text,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            });
-            input.value = '';
-        };
+function showScreen(id){
+  ["screen-login","screen-main","screen-room","screen-dm","screen-admin"].forEach(s=>{
+    const el=$(s);if(el){el.classList.add("hidden");el.style.display="none";}
+  });
+  const el=$(id);if(el){el.classList.remove("hidden");el.style.display="flex";}
+}
 
-        window.closeChatRoom = () => {
-            if (messagesListener) messagesListener.off();
-            renderMainApp();
-        };
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+let S={
+  user:null, currentRoom:null, currentDmFriend:null,
+  myRooms:[], onlineUsers:[], friends:[], notifications:[],
+  currentTab:"home", selIcon:"🏠", editGender:"unset", signupGender:"unset",
+  seats:Array.from({length:5},(_,i)=>({id:i+1,user:null,muted:false})),
+  onMic:false, micMuted:false,
+  xpTimer:null, micTimer:null, presTimer:null,
+  roomUnsub:null, usersUnsub:null, roomsUnsub:null, membersUnsub:null,
+  dmUnsub:null, notifsUnsub:null, friendsUnsub:null,
+  roomMembers:[], seenMsgIds:new Set(), seenDmIds:new Set(),
+  // WebRTC
+  localStream:null, peerConnections:{}, iceCandidatesQueue:{},
+  unreadNotifs:0,
+};
 
-        window.logout = async () => {
-            await db.ref(`users/${currentUser.uid}`).update({ online: false });
-            await auth.signOut();
-            renderAuth();
-        };
+// ══════════════════════════════════════════════
+// XP & LEVEL
+// ══════════════════════════════════════════════
+async function addXP(n){
+  if(!S.user||S.user.isOwner||S.user.isGuest)return;
+  const prev=S.user.level;
+  S.user.xp+=n; S.user.level=calcLevel(S.user.xp);
+  if(S.user.level>prev){$("toast-lvl-num").textContent=S.user.level;show("toast-lvlup");setTimeout(()=>hide("toast-lvlup"),3500);}
+  updateHdr();
+  try{await window.FB.updateDoc(window.FB.doc(window.FB_DB,"users",S.user.id),{xp:S.user.xp,level:S.user.level});}catch(e){}
+}
+function startXPTimer(){clearInterval(S.xpTimer);S.xpTimer=setInterval(()=>addXP(1),5*60*1000);}
 
-        // مراقبة المستخدم
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                currentUser = user;
-                const snap = await db.ref(`users/${user.uid}`).once('value');
-                if (!snap.exists() || !snap.val().profileCompleted) {
-                    renderCompleteProfile();
-                } else {
-                    currentUserData = snap.val();
-                    await db.ref(`users/${user.uid}`).update({ online: true });
-                    renderMainApp();
-                }
-            } else {
-                renderAuth();
-            }
-        });
+// ══════════════════════════════════════════════
+// HEADER
+// ══════════════════════════════════════════════
+function updateHdr(){
+  const u=S.user;if(!u)return;
+  const lvl=u.isOwner?100:calcLevel(u.xp), pct=u.isOwner?100:xpPct(u.xp);
+  $("hdr-logo").className=u.isOwner?"app-logo owner":"app-logo";
+  $("hdr-xp-label").className=u.isOwner?"xp-label owner":"xp-label";
+  $("hdr-xp-label").textContent=u.isOwner?"👑 MAX":`${u.xp} XP`;
+  $("hdr-xp-fill").className=u.isOwner?"xp-fill owner":"xp-fill";
+  if(!u.isOwner)$("hdr-xp-fill").style.width=pct+"%";
+  const av=$("hdr-avatar");
+  av.textContent=(u.name||"?")[0].toUpperCase();
+  av.style.background=u.color;
+  av.className=`avatar${u.isOwner?" owner":""}`;
+  av.style.border=u.isOwner?"2.5px solid #f59e0b":`2px solid ${u.color}55`;
+  $("hdr-avatar-level").className=u.isOwner?"avatar-level owner":"avatar-level";
+  $("hdr-avatar-level").textContent=u.isOwner?"👑100":`Lv.${lvl}`;
+  tog("hdr-owner-tag",u.isOwner);
+  tog("btn-admin-panel",u.isOwner);
+}
 
-        // إنشاء حساب أدمن تلقائي
-        setTimeout(async () => {
-            try {
-                await auth.createUserWithEmailAndPassword('admin@chatksa.com', 'Admin@123456');
-                console.log('Admin ready');
-            } catch(e) {}
-        }, 2000);
-    </script>
+// ══════════════════════════════════════════════
+// LOGIN UI
+// ══════════════════════════════════════════════
+function showMode(m){hide("login-main");hide("login-signup");hide("login-signin");show("login-"+m);}
+function setSGender(g){S.signupGender=g;document.querySelectorAll("[data-gender]").forEach(b=>b.classList.toggle("active",b.dataset.gender===g));}
+document.querySelectorAll("[data-gender]").forEach(b=>b.onclick=()=>setSGender(b.dataset.gender));
+$("btn-goto-signup").onclick=()=>showMode("signup");
+$("btn-goto-signin").onclick=()=>showMode("signin");
+$("btn-back-su").onclick=()=>showMode("main");
+$("btn-back-si").onclick=()=>{showMode("main");hide("si-err");};
+
+// ══════════════════════════════════════════════
+// DO LOGIN
+// ══════════════════════════════════════════════
+async function doLogin(user){
+  S.user=user; showScreen("screen-main"); updateHdr(); renderTab("home");
+  if(!user.isOwner&&!user.isGuest){addXP(10);startXPTimer();startPresence();}
+  listenUsers(); if(!user.isGuest){listenMyRooms();listenFriends();listenNotifications();}
+  updateOfficialCount();
+}
+
+// ══════════════════════════════════════════════
+// PRESENCE
+// ══════════════════════════════════════════════
+async function startPresence(){
+  if(!S.user||S.user.isOwner||S.user.isGuest)return;
+  const ref=window.FB.doc(window.FB_DB,"presence",S.user.id);
+  const write=async()=>{
+    try{await window.FB.setDoc(ref,{uid:S.user.id,name:S.user.name,color:S.user.color,level:S.user.level,xp:S.user.xp,isAdmin:!!S.user.isAdmin,online:true,inRoom:null,uid_code:S.user.uid_code||"",lastSeen:window.FB.serverTimestamp()});}catch(e){}
+  };
+  await write(); S.presTimer=setInterval(write,25000);
+}
+async function removePresence(){
+  if(!S.user||S.user.isOwner||S.user.isGuest)return;
+  try{await window.FB.updateDoc(window.FB.doc(window.FB_DB,"presence",S.user.id),{online:false,inRoom:null});}catch(e){}
+}
+
+function listenUsers(){
+  if(S.usersUnsub)S.usersUnsub();
+  const q=window.FB.query(window.FB.collection(window.FB_DB,"presence"),window.FB.where("online","==",true));
+  S.usersUnsub=window.FB.onSnapshot(q,snap=>{
+    S.onlineUsers=[];
+    snap.forEach(d=>{if(d.id!==S.user?.id)S.onlineUsers.push({id:d.id,...d.data()});});
+    renderOnlineList(); updateOfficialCount();
+    if(S.currentRoom)updateMembersBar();
+  });
+}
+function listenMyRooms(){
+  if(S.roomsUnsub)S.roomsUnsub();
+  if(!S.user||S.user.isGuest)return;
+  const q=window.FB.query(window.FB.collection(window.FB_DB,"rooms"),window.FB.where("ownerId","==",S.user.id));
+  S.roomsUnsub=window.FB.onSnapshot(q,snap=>{
+    S.myRooms=[]; snap.forEach(d=>S.myRooms.push({id:d.id,...d.data()})); renderRooms();
+  });
+}
+function listenFriends(){
+  if(S.friendsUnsub)S.friendsUnsub();
+  if(!S.user||S.user.isGuest)return;
+  S.friendsUnsub=window.FB.onSnapshot(window.FB.doc(window.FB_DB,"users",S.user.id),snap=>{
+    if(snap.exists()){S.friends=snap.data().friends||[];renderFriendsList();}
+  });
+}
+function listenNotifications(){
+  if(S.notifsUnsub)S.notifsUnsub();
+  if(!S.user||S.user.isGuest)return;
+  const q=window.FB.query(window.FB.collection(window.FB_DB,"users",S.user.id,"notifications"),window.FB.orderBy("ts","desc"),window.FB.limit(20));
+  S.notifsUnsub=window.FB.onSnapshot(q,snap=>{
+    S.notifications=[]; S.unreadNotifs=0;
+    snap.forEach(d=>{const data={id:d.id,...d.data()};S.notifications.push(data);if(!data.read)S.unreadNotifs++;});
+    updateNotifBadge(); renderNotifications();
+  });
+}
+function updateNotifBadge(){
+  const badge=$("tab-notif-badge"), dot=$("notif-dot");
+  tog(badge,S.unreadNotifs>0); if(S.unreadNotifs>0)badge.textContent=S.unreadNotifs;
+  tog(dot,S.unreadNotifs>0);
+}
+function updateOfficialCount(){
+  const c=S.onlineUsers.length+1;
+  const el=$("official-count");if(el)el.textContent=`${c} متصل`;
+}
+
+// ══════════════════════════════════════════════
+// SIGNUP
+// ══════════════════════════════════════════════
+$("btn-signup").onclick=async()=>{
+  const name=$("su-name").value.trim(),email=$("su-email").value.trim(),pass=$("su-pass").value;
+  const err=$("su-err");hide(err);
+  if(email.toLowerCase()===OWNER_EMAIL&&pass===OWNER_PASS)return doLogin(OWNER_PROFILE);
+  if(!name){err.textContent="أدخل الاسم";show(err);return;}
+  if(!email){err.textContent="أدخل البريد";show(err);return;}
+  if(pass.length<6){err.textContent="كلمة المرور 6 أحرف على الأقل";show(err);return;}
+  const btn=$("btn-signup");btn.disabled=true;btn.textContent="جاري الإنشاء...";
+  try{
+    const cred=await window.FB.createUserWithEmailAndPassword(window.FB_AUTH,email,pass);
+    const uid=cred.user.uid,color=randColor(),uid_code=genUID();
+    const ud={id:uid,name,email,color,gender:S.signupGender,xp:0,level:0,isOwner:false,isAdmin:false,isGuest:false,badges:[],title:"عضو",uid_code,friends:[],createdAt:window.FB.serverTimestamp()};
+    await window.FB.setDoc(window.FB.doc(window.FB_DB,"users",uid),ud);
+    doLogin(ud);
+  }catch(e){
+    const m={"auth/email-already-in-use":"البريد مستخدم بالفعل","auth/invalid-email":"بريد غير صحيح","auth/weak-password":"كلمة المرور ضعيفة"};
+    err.textContent=m[e.code]||e.message;show(err);
+  }finally{btn.disabled=false;btn.textContent="إنشاء الحساب ✓";}
+};
+
+// ══════════════════════════════════════════════
+// SIGNIN
+// ══════════════════════════════════════════════
+$("btn-signin").onclick=async()=>{
+  const email=$("si-email").value.trim(),pass=$("si-pass").value;
+  const err=$("si-err");hide(err);
+  if(email.toLowerCase()===OWNER_EMAIL&&pass===OWNER_PASS)return doLogin(OWNER_PROFILE);
+  if(!email||!pass){err.textContent="أدخل البريد وكلمة المرور";show(err);return;}
+  const btn=$("btn-signin");btn.disabled=true;btn.textContent="جاري الدخول...";
+  try{
+    const cred=await window.FB.signInWithEmailAndPassword(window.FB_AUTH,email,pass);
+    const snap=await window.FB.getDoc(window.FB.doc(window.FB_DB,"users",cred.user.uid));
+    if(snap.exists()){
+      const data={id:snap.id,...snap.data()};
+      if(data.banned){await window.FB.signOut(window.FB_AUTH);err.textContent="تم حظرك";show(err);return;}
+      // تأكد من وجود uid_code
+      if(!data.uid_code){const uid_code=genUID();await window.FB.updateDoc(window.FB.doc(window.FB_DB,"users",snap.id),{uid_code});data.uid_code=uid_code;}
+      doLogin(data);
+    }else{
+      const uid_code=genUID();
+      const ud={id:cred.user.uid,name:email.split("@")[0],email,color:randColor(),gender:"unset",xp:0,level:0,isOwner:false,isAdmin:false,isGuest:false,badges:[],title:"عضو",uid_code,friends:[]};
+      await window.FB.setDoc(window.FB.doc(window.FB_DB,"users",cred.user.uid),ud);
+      doLogin(ud);
+    }
+  }catch(e){
+    const m={"auth/user-not-found":"لا يوجد حساب","auth/wrong-password":"كلمة المرور غلط","auth/invalid-credential":"البريد أو كلمة المرور غلط"};
+    err.textContent=m[e.code]||"خطأ في الدخول";show(err);
+  }finally{btn.disabled=false;btn.textContent="دخول →";}
+};
+$("btn-guest").onclick=()=>doLogin({id:"guest_"+Date.now(),name:"زائر",email:"",color:"#94a3b8",gender:"unset",xp:0,level:0,isOwner:false,isAdmin:false,isGuest:true,badges:[],title:"زائر",uid_code:"GUEST"});
+
+// ══════════════════════════════════════════════
+// TABS
+// ══════════════════════════════════════════════
+function renderTab(tab){
+  S.currentTab=tab;
+  ["home","friends","profile","notifs"].forEach(t=>{
+    const el=$(`tab-${t}`);if(el)tog(el,t===tab);
+    const ind=$(`ind-${t}`);if(ind)tog(ind,t===tab);
+    const btn=document.querySelector(`[data-tab="${t}"]`);
+    if(btn){btn.classList.toggle("active",t===tab);btn.classList.toggle("owner-tab",t===tab&&S.user?.isOwner);}
+  });
+  if(tab==="profile")renderProfile();
+  if(tab==="home")renderRooms();
+  if(tab==="friends"){renderFriendsList();renderOnlineList();}
+  if(tab==="notifs"){renderNotifications();markNotifsRead();}
+}
+document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>renderTab(b.dataset.tab));
+$("hdr-avatar-wrap").onclick=()=>renderTab("profile");
+$("notif-btn").onclick=()=>renderTab("notifs");
+
+// ══════════════════════════════════════════════
+// FRIENDS SYSTEM
+// ══════════════════════════════════════════════
+$("btn-open-add-friend").onclick=()=>{
+  $("friend-id-inp").value="";$("friend-search-result").innerHTML="";show("modal-add-friend");
+};
+$("btn-cancel-add-friend").onclick=()=>hide("modal-add-friend");
+
+$("btn-search-friend").onclick=async()=>{
+  const code=$("friend-id-inp").value.trim().toUpperCase();
+  const res=$("friend-search-result");
+  if(!code){res.innerHTML=`<div style="color:#ef4444;font-size:12px;text-align:center">أدخل الـ ID</div>`;return;}
+  if(code===S.user?.uid_code){res.innerHTML=`<div style="color:#ef4444;font-size:12px;text-align:center">هذا معرّفك أنت! 😄</div>`;return;}
+  res.innerHTML=`<div style="color:#475569;font-size:12px;text-align:center">جاري البحث...</div>`;
+  try{
+    const q=window.FB.query(window.FB.collection(window.FB_DB,"users"),window.FB.where("uid_code","==",code),window.FB.limit(1));
+    const snap=await window.FB.getDocs(q);
+    if(snap.empty){res.innerHTML=`<div style="color:#ef4444;font-size:12px;text-align:center;padding:10px">لم يُعثر على مستخدم بهذا الـ ID</div>`;return;}
+    const found={id:snap.docs[0].id,...snap.docs[0].data()};
+    const alreadyFriend=S.friends.includes(found.id);
+    res.innerHTML=`
+      <div class="search-result-card">
+        ${avHTML(found.name,found.color||"#6366f1",46)}
+        <div style="flex:1">
+          <div style="color:#f1f5f9;font-weight:700">${found.name}</div>
+          <div style="color:#475569;font-size:11px;margin-top:2px">${found.uid_code}</div>
+          <div style="margin-top:4px">${lvlBadgeSVG(found.level||0,24)}</div>
+        </div>
+        ${alreadyFriend
+          ? `<span style="color:#10b981;font-size:12px">✓ صديق بالفعل</span>`
+          : `<button class="btn small primary" onclick="sendFriendReq('${found.id}','${found.name}')">+ إضافة</button>`}
+      </div>`;
+  }catch(e){res.innerHTML=`<div style="color:#ef4444;font-size:12px;text-align:center">خطأ في البحث</div>`;}
+};
+
+async function sendFriendReq(toId,toName){
+  try{
+    await window.FB.addDoc(window.FB.collection(window.FB_DB,"users",toId,"notifications"),{
+      type:"friend_request", fromId:S.user.id, fromName:S.user.name,
+      fromColor:S.user.color, fromCode:S.user.uid_code||"",
+      text:`${S.user.name} أرسل لك طلب صداقة`, read:false,
+      ts:window.FB.serverTimestamp()
+    });
+    hide("modal-add-friend"); showToast("تم إرسال طلب الصداقة ✓");
+  }catch(e){showToast("خطأ في الإرسال");}
+}
+
+async function acceptFriend(fromId, fromName, fromColor, notifId){
+  try{
+    // أضف للطرفين
+    await window.FB.updateDoc(window.FB.doc(window.FB_DB,"users",S.user.id),{friends:window.FB.arrayUnion(fromId)});
+    await window.FB.updateDoc(window.FB.doc(window.FB_DB,"users",fromId),{friends:window.FB.arrayUnion(S.user.id)});
+    // أرسل إشعار للطرف الآخر
+    await window.FB.addDoc(window.FB.collection(window.FB_DB,"users",fromId,"notifications"),{
+      type:"friend_accepted", fromId:S.user.id, fromName:S.user.name,
+      fromColor:S.user.color, text:`${S.user.name} قبل طلب صداقتك! 🎉`,
+      read:false, ts:window.FB.serverTimestamp()
+    });
+    // احذف الإشعار
+    await window.FB.deleteDoc(window.FB.doc(window.FB_DB,"users",S.user.id,"notifications",notifId));
+    showToast(`أصبحت صديقاً مع ${fromName} 🎉`);
+  }catch(e){showToast("خطأ!");}
+}
+
+async function rejectFriend(notifId){
+  try{await window.FB.deleteDoc(window.FB.doc(window.FB_DB,"users",S.user.id,"notifications",notifId));}catch(e){}
+}
+
+async function removeFriend(friendId){
+  try{
+    await window.FB.updateDoc(window.FB.doc(window.FB_DB,"users",S.user.id),{friends:window.FB.arrayRemove(friendId)});
+    await window.FB.updateDoc(window.FB.doc(window.FB_DB,"users",friendId),{friends:window.FB.arrayRemove(S.user.id)});
+    showToast("تم إزالة الصديق");
+  }catch(e){}
+}
+
+function renderFriendsList(){
+  const list=$("friends-list"),lbl=$("friends-lbl");
+  if(lbl)lbl.textContent=`الأصدقاء (${S.friends.length})`;
+  if(!list)return;
+  if(S.friends.length===0){list.innerHTML=`<div style="color:#475569;font-size:12px;text-align:center;padding:20px">لا يوجد أصدقاء — ابحث بالـ ID</div>`;return;}
+  // جيب بيانات الأصدقاء من الأونلاين أو من Firebase
+  list.innerHTML="";
+  S.friends.forEach(async fid=>{
+    const online=S.onlineUsers.find(u=>u.id===fid||u.uid===fid);
+    let fdata=online;
+    if(!fdata){
+      try{const snap=await window.FB.getDoc(window.FB.doc(window.FB_DB,"users",fid));if(snap.exists())fdata={id:snap.id,...snap.data()};}catch(e){}
+    }
+    if(!fdata)return;
+    const card=document.createElement("div");
+    card.className="friend-card";
+    card.innerHTML=`
+      <div style="position:relative">${avHTML(fdata.name,fdata.color||"#6366f1",46)}
+        <div style="position:absolute;bottom:0;left:0;width:11px;height:11px;border-radius:50%;background:${online?"#10b981":"#475569"};border:2px solid #080810"></div>
+      </div>
+      <div style="flex:1">
+        <div style="color:#f1f5f9;font-weight:700;font-size:14px">${fdata.name}</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:3px">
+          ${lvlBadgeSVG(fdata.level||0,22)}
+          <span style="color:#94a3b8;font-size:11px">Lv.${fdata.level||0}</span>
+          <span style="color:${online?"#10b981":"#475569"};font-size:10px">${online?"● متصل":"○ غير متصل"}</span>
+        </div>
+      </div>
+      <div class="friend-actions">
+        <button class="fa-btn msg" onclick="openDM('${fdata.id||fid}','${fdata.name}','${fdata.color||"#6366f1"}')">💬</button>
+        <button class="fa-btn remove" onclick="removeFriend('${fdata.id||fid}')">✕</button>
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+function renderOnlineList(){
+  const list=$("online-list");if(!list)return;
+  const notFriends=S.onlineUsers.filter(u=>!S.friends.includes(u.id));
+  if(notFriends.length===0){list.innerHTML=`<div style="color:#475569;font-size:11px;text-align:center;padding:8px">لا يوجد متصلون الآن</div>`;return;}
+  list.innerHTML=notFriends.map(f=>`
+    <div class="friend-card">
+      <div style="position:relative">${avHTML(f.name,f.color||"#6366f1",40)}
+        <div style="position:absolute;bottom:0;left:0;width:9px;height:9px;border-radius:50%;background:#10b981;border:1.5px solid #080810"></div>
+      </div>
+      <div style="flex:1">
+        <div style="color:#f1f5f9;font-weight:700;font-size:13px">${f.name}</div>
+        <div style="display:flex;align-items:center;gap:5px;margin-top:2px">
+          ${lvlBadgeSVG(f.level||0,20)}
+          <span style="color:#94a3b8;font-size:10px">Lv.${f.level||0} · ${f.uid_code||""}</span>
+        </div>
+      </div>
+      <button class="fa-btn add" onclick="sendFriendReq('${f.id}','${f.name}')">+ إضافة</button>
+    </div>`).join("");
+}
+
+function renderNotifications(){
+  const list=$("notifs-list");if(!list)return;
+  if(S.notifications.length===0){list.innerHTML=`<div style="color:#475569;font-size:12px;text-align:center;padding:20px">لا توجد إشعارات</div>`;return;}
+  list.innerHTML=S.notifications.map(n=>`
+    <div class="notif-card${n.read?"":" unread"}">
+      ${avHTML(n.fromName||"?",n.fromColor||"#6366f1",40)}
+      <div style="flex:1">
+        <div style="color:#f1f5f9;font-size:13px;font-weight:600">${n.text}</div>
+        ${n.type==="friend_request"?`
+        <div class="notif-actions">
+          <button class="notif-accept" onclick="acceptFriend('${n.fromId}','${n.fromName}','${n.fromColor}','${n.id}')">✓ قبول</button>
+          <button class="notif-reject" onclick="rejectFriend('${n.id}')">✕ رفض</button>
+        </div>`:""}
+      </div>
+    </div>`).join("");
+}
+
+async function markNotifsRead(){
+  if(!S.user||S.user.isGuest)return;
+  S.notifications.forEach(async n=>{
+    if(!n.read){
+      try{await window.FB.updateDoc(window.FB.doc(window.FB_DB,"users",S.user.id,"notifications",n.id),{read:true});}catch(e){}
+    }
+  });
+}
+
+// ══════════════════════════════════════════════
+// PRIVATE MESSAGES (DM)
+// ══════════════════════════════════════════════
+function openDM(friendId,friendName,friendColor){
+  S.currentDmFriend={id:friendId,name:friendName,color:friendColor};
+  $("dm-friend-name").textContent=friendName;
+  $("dm-friend-av").textContent=friendName[0].toUpperCase();
+  $("dm-friend-av").style.background=friendColor;
+  const isOnline=S.onlineUsers.find(u=>u.id===friendId);
+  $("dm-friend-status").textContent=isOnline?"● متصل":"○ غير متصل";
+  $("dm-friend-status").style.color=isOnline?"#10b981":"#475569";
+  $("dm-msgs-area").innerHTML=""; S.seenDmIds=new Set();
+  showScreen("screen-dm");
+
+  if(S.dmUnsub){S.dmUnsub();S.dmUnsub=null;}
+  const dmId=[S.user.id,friendId].sort().join("_");
+  const q=window.FB.query(window.FB.collection(window.FB_DB,"dms",dmId,"messages"),window.FB.orderBy("ts"));
+  S.dmUnsub=window.FB.onSnapshot(q,snap=>{
+    snap.docChanges().forEach(change=>{
+      if(change.type==="added"&&!S.seenDmIds.has(change.doc.id)){
+        S.seenDmIds.add(change.doc.id);
+        appendDmMsg({id:change.doc.id,...change.doc.data()});
+      }
+    });
+  });
+}
+
+function appendDmMsg(msg){
+  const area=$("dm-msgs-area");
+  const isMe=msg.uid===S.user?.id;
+  const wrap=document.createElement("div");
+  wrap.className=`msg-wrap ${isMe?"me":"them"}`;
+  let sender="";
+  if(!isMe)sender=`<div class="msg-sender">${avHTML(msg.name,msg.color||"#6366f1",22)}<span style="color:${msg.color||"#6366f1"}">${msg.name}</span></div>`;
+  let bc="msg-bubble"+(isMe?" me":"");
+  wrap.innerHTML=`${sender}<div class="${bc}">${msg.text}</div><span class="msg-time" style="align-self:${isMe?"flex-start":"flex-end"}">${msg.time||fmtTime()}</span>`;
+  area.appendChild(wrap); area.scrollTop=area.scrollHeight;
+}
+
+async function sendDmMsg(){
+  const inp=$("dm-input"),text=inp.value.trim();if(!text)return;
+  inp.value="";
+  const dmId=[S.user.id,S.currentDmFriend.id].sort().join("_");
+  try{
+    await window.FB.addDoc(window.FB.collection(window.FB_DB,"dms",dmId,"messages"),{
+      uid:S.user.id, name:S.user.name, color:S.user.color,
+      text, time:fmtTime(), ts:window.FB.serverTimestamp()
+    });
+    // إشعار للطرف الآخر
+    await window.FB.addDoc(window.FB.collection(window.FB_DB,"users",S.currentDmFriend.id,"notifications"),{
+      type:"dm", fromId:S.user.id, fromName:S.user.name, fromColor:S.user.color,
+      text:`${S.user.name}: ${text.substring(0,40)}`, read:false, ts:window.FB.serverTimestamp()
+    });
+  }catch(e){showToast("خطأ في الإرسال");}
+}
+$("dm-send-btn").onclick=sendDmMsg;
+$("dm-input").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendDmMsg();}});
+$("btn-leave-dm").onclick=()=>{
+  if(S.dmUnsub){S.dmUnsub();S.dmUnsub=null;}
+  S.currentDmFriend=null; showScreen("screen-main"); renderTab("friends");
+};
+window.openDM=openDM;
+window.sendFriendReq=sendFriendReq;
+window.acceptFriend=acceptFriend;
+window.rejectFriend=rejectFriend;
+window.removeFriend=removeFriend;
+
+// ══════════════════════════════════════════════
+// ROOMS
+// ══════════════════════════════════════════════
+function renderRooms(){
+  const list=$("my-rooms-list"),noMsg=$("no-rooms-msg");
+  list.innerHTML="";
+  if(S.myRooms.length===0){show(noMsg);return;}
+  hide(noMsg);
+  S.myRooms.forEach(r=>{
+    const card=document.createElement("div");card.className="room-card";card.style.marginTop="8px";
+    card.innerHTML=`<div style="width:48px;height:48px;border-radius:12px;background:rgba(99,102,241,0.12);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">${r.icon||"🏠"}</div><div style="flex:1"><div style="color:#f1f5f9;font-weight:700;font-size:14px">${r.name}</div><div style="color:#475569;font-size:12px">${r.desc||""}</div></div><span style="color:#94a3b8;font-size:18px">‹</span>`;
+    card.onclick=()=>enterRoom(r); list.appendChild(card);
+  });
+}
+$("btn-enter-official").onclick=()=>enterRoom(OFFICIAL);
+
+// ══════════════════════════════════════════════
+// ENTER ROOM
+// ══════════════════════════════════════════════
+function enterRoom(room){
+  S.currentRoom=room; S.onMic=false; S.micMuted=false; S.seenMsgIds=new Set();
+  S.seats=Array.from({length:5},(_,i)=>({id:i+1,user:null,muted:false}));
+  $("room-title-display").textContent=room.name;
+  $("room-icon-display").textContent=room.icon||"🏠";
+  tog("room-official-badge",!!room.isOfficial);
+  $("send-btn").className=S.user.isOwner?"send-btn owner":"send-btn";
+  $("chat-input").placeholder=S.user.isOwner?"رسالة المالك 👑...":"اكتب رسالة...";
+  renderSeats(); $("msgs-area").innerHTML=""; hide("mic-controls");
+  markInRoom(true); showScreen("screen-room");
+
+  if(S.roomUnsub){S.roomUnsub();S.roomUnsub=null;}
+  const q=window.FB.query(window.FB.collection(window.FB_DB,"rooms",room.id,"messages"),window.FB.orderBy("ts"));
+  S.roomUnsub=window.FB.onSnapshot(q,snap=>{
+    snap.docChanges().forEach(change=>{
+      if(change.type==="added"&&!S.seenMsgIds.has(change.doc.id)){
+        S.seenMsgIds.add(change.doc.id);
+        appendMsg({id:change.doc.id,...change.doc.data()});
+      }
+    });
+  });
+
+  if(S.membersUnsub){S.membersUnsub();S.membersUnsub=null;}
+  const mq=window.FB.query(window.FB.collection(window.FB_DB,"presence"),window.FB.where("inRoom","==",room.id));
+  S.membersUnsub=window.FB.onSnapshot(mq,snap=>{
+    S.roomMembers=[]; snap.forEach(d=>S.roomMembers.push({id:d.id,...d.data()}));
+    updateMembersBar();
+  });
+}
+
+async function markInRoom(v){
+  if(!S.user||S.user.isOwner||S.user.isGuest)return;
+  try{await window.FB.updateDoc(window.FB.doc(window.FB_DB,"presence",S.user.id),{inRoom:v?(S.currentRoom?.id||null):null});}catch(e){}
+}
+
+function updateMembersBar(){
+  const bar=$("members-bar");if(!bar)return;
+  const me={id:S.user.id,name:S.user.name,color:S.user.color,isOwner:S.user.isOwner,isMe:true,level:S.user.level||0};
+  const others=S.roomMembers.filter(m=>m.uid!==S.user.id&&m.id!==S.user.id);
+  const all=[me,...others];
+  const cnt=$("room-members-count");if(cnt)cnt.textContent=`${all.length} متصل`;
+  bar.innerHTML=all.map(m=>`
+    <div class="member-chip">
+      <div class="member-av" style="background:${m.color||"#6366f1"};border:${m.isOwner?"2px solid #f59e0b":`2px solid ${m.color||"#6366f1"}55`};${m.isOwner?"animation:glow 2s infinite;":""}">
+        ${(m.name||"?")[0].toUpperCase()}
+        ${m.isMe?`<div style="position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;border-radius:50%;background:#10b981;border:1.5px solid #080810"></div>`:""}
+      </div>
+      <div style="display:flex;align-items:center;gap:2px">${lvlBadgeSVG(m.level||0,14)}</div>
+      <span class="member-name-sm" style="color:${m.isOwner?"#f59e0b":m.isMe?"#6366f1":"#94a3b8"}">${m.isMe?"أنت":m.name?.split(" ")[0]||"?"}</span>
+    </div>`).join("");
+}
+
+function leaveRoom(){
+  if(S.onMic)leaveMic();
+  stopVoice();
+  if(S.micTimer){clearInterval(S.micTimer);S.micTimer=null;}
+  if(S.roomUnsub){S.roomUnsub();S.roomUnsub=null;}
+  if(S.membersUnsub){S.membersUnsub();S.membersUnsub=null;}
+  markInRoom(false); S.currentRoom=null; S.roomMembers=[];
+  showScreen("screen-main"); renderTab(S.currentTab);
+}
+$("btn-leave-room").onclick=leaveRoom;
+
+// ══════════════════════════════════════════════
+// SEATS
+// ══════════════════════════════════════════════
+function renderSeats(){
+  const bar=$("seats-bar");bar.innerHTML="";
+  S.seats.forEach((seat,i)=>{
+    const wrap=document.createElement("div");wrap.className="seat-wrap";
+    const u=seat.user;
+    let cls="seat"+((!u)?" empty":u.isOwner?" owner-seat":u.isMe?" me taken":" taken");
+    if(u&&u.speaking)cls+=" speaking";
+    const ss=u?`background:${u.color}22;color:#fff;font-size:20px;font-weight:800;`:"";
+    wrap.innerHTML=`<div class="${cls}" style="${ss}" data-sid="${seat.id}">${u?u.name[0]:"🎤"}${u?.isOwner?`<span style="position:absolute;top:-8px;right:-8px;font-size:14px">👑</span>`:""}${seat.muted&&u?`<span style="position:absolute;bottom:-4px;right:-4px;font-size:11px;background:#080810;border-radius:50%">🔇</span>`:""}</div><span class="seat-name" style="color:${u?.isOwner?"#f59e0b":u?.color||"#475569"}">${u?u.name.split(" ")[0]:`${i+1}`}</span>`;
+    wrap.querySelector(".seat").onclick=()=>{
+      if(!u&&!S.onMic)takeMic();
+      else if(u?.isMe&&!S.user.isOwner)leaveMic();
+      else if(u&&(S.user.isOwner||S.user.isAdmin)&&!u?.isMe)adminMuteSeat(seat.id);
+    };
+    bar.appendChild(wrap);
+  });
+}
+function takeMic(){
+  const e=S.seats.findIndex(s=>!s.user);if(e===-1)return;
+  S.seats[e].user={name:S.user.name,color:S.user.color,isMe:true,isOwner:S.user.isOwner};
+  S.onMic=true;S.micMuted=false;show("mic-controls");
+  $("mic-toggle-btn").className="mic-btn active";$("mic-toggle-btn").textContent="🎤 مفعّل";
+  renderSeats(); startVoice(); S.micTimer=setInterval(()=>addXP(2),60000);
+}
+function leaveMic(){
+  S.seats=S.seats.map(s=>s.user?.isMe?{...s,user:null}:s);
+  S.onMic=false;hide("mic-controls");renderSeats();
+  stopVoice(); clearInterval(S.micTimer);S.micTimer=null;
+}
+function adminMuteSeat(id){S.seats=S.seats.map(s=>s.id===id?{...s,muted:!s.muted}:s);renderSeats();}
+$("mic-toggle-btn").onclick=()=>{
+  S.micMuted=!S.micMuted;
+  $("mic-toggle-btn").className=S.micMuted?"mic-btn muted":"mic-btn active";
+  $("mic-toggle-btn").textContent=S.micMuted?"🔇 مكتوم":"🎤 مفعّل";
+  if(S.localStream)S.localStream.getAudioTracks().forEach(t=>t.enabled=!S.micMuted);
+};
+$("mic-leave-btn").onclick=leaveMic;
+
+// ══════════════════════════════════════════════
+// 🎤 WEBRTC VOICE — مايكات حقيقية
+// ══════════════════════════════════════════════
+const ICE_SERVERS={iceServers:[{urls:["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302"]}]};
+
+async function startVoice(){
+  if(!S.currentRoom)return;
+  try{
+    S.localStream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+    showToast("🎤 تم تفعيل المايك");
+    // أرسل signal للآخرين بأنك دخلت
+    await signalRoomPresence("joined");
+    // استمع للـ signals
+    listenVoiceSignals();
+  }catch(e){showToast("لا يمكن الوصول للمايك — تحقق من الإذن");}
+}
+
+async function stopVoice(){
+  if(S.localStream){S.localStream.getTracks().forEach(t=>t.stop());S.localStream=null;}
+  Object.values(S.peerConnections).forEach(pc=>pc.close());
+  S.peerConnections={};
+  if(S.voiceUnsub){S.voiceUnsub();S.voiceUnsub=null;}
+  if(S.currentRoom)await signalRoomPresence("left");
+}
+
+async function signalRoomPresence(type){
+  if(!S.currentRoom||!S.user||S.user.isGuest)return;
+  try{
+    await window.FB.addDoc(window.FB.collection(window.FB_DB,"voice",S.currentRoom.id,"signals"),{
+      type, from:S.user.id, fromName:S.user.name,
+      ts:window.FB.serverTimestamp()
+    });
+  }catch(e){}
+}
+
+function listenVoiceSignals(){
+  if(!S.currentRoom)return;
+  if(S.voiceUnsub){S.voiceUnsub();S.voiceUnsub=null;}
+  const q=window.FB.query(window.FB.collection(window.FB_DB,"voice",S.currentRoom.id,"signals"),window.FB.orderBy("ts"));
+  S.voiceUnsub=window.FB.onSnapshot(q,snap=>{
+    snap.docChanges().forEach(async change=>{
+      if(change.type!=="added")return;
+      const data={id:change.doc.id,...change.doc.data()};
+      if(data.from===S.user.id)return; // تجاهل رسائلك
+      if(data.type==="joined"&&S.localStream){
+        // شخص جديد — ابدأ اتصال معه
+        await createOffer(data.from);
+      } else if(data.type==="offer"&&data.to===S.user.id){
+        await handleOffer(data.from,data.offer);
+      } else if(data.type==="answer"&&data.to===S.user.id){
+        await handleAnswer(data.from,data.answer);
+      } else if(data.type==="ice"&&data.to===S.user.id){
+        await handleICE(data.from,data.candidate);
+      }
+    });
+  });
+}
+
+async function createOffer(toId){
+  if(!S.localStream)return;
+  const pc=new RTCPeerConnection(ICE_SERVERS);
+  S.peerConnections[toId]=pc;
+  S.localStream.getTracks().forEach(t=>pc.addTrack(t,S.localStream));
+  pc.ontrack=e=>playRemoteAudio(toId,e.streams[0]);
+  pc.onicecandidate=async e=>{
+    if(e.candidate){
+      try{await window.FB.addDoc(window.FB.collection(window.FB_DB,"voice",S.currentRoom.id,"signals"),{type:"ice",from:S.user.id,to:toId,candidate:e.candidate.toJSON(),ts:window.FB.serverTimestamp()});}catch(err){}
+    }
+  };
+  const offer=await pc.createOffer();
+  await pc.setLocalDescription(offer);
+  try{await window.FB.addDoc(window.FB.collection(window.FB_DB,"voice",S.currentRoom.id,"signals"),{type:"offer",from:S.user.id,to:toId,offer:{type:offer.type,sdp:offer.sdp},ts:window.FB.serverTimestamp()});}catch(e){}
+}
+
+async function handleOffer(fromId,offer){
+  if(!S.localStream)return;
+  const pc=new RTCPeerConnection(ICE_SERVERS);
+  S.peerConnections[fromId]=pc;
+  S.localStream.getTracks().forEach(t=>pc.addTrack(t,S.localStream));
+  pc.ontrack=e=>playRemoteAudio(fromId,e.streams[0]);
+  pc.onicecandidate=async e=>{
+    if(e.candidate){
+      try{await window.FB.addDoc(window.FB.collection(window.FB_DB,"voice",S.currentRoom.id,"signals"),{type:"ice",from:S.user.id,to:fromId,candidate:e.candidate.toJSON(),ts:window.FB.serverTimestamp()});}catch(err){}
+    }
+  };
+  await pc.setRemoteDescription(new RTCSessionDescription(offer));
+  // تطبيق candidates المخزنة
+  (S.iceCandidatesQueue[fromId]||[]).forEach(c=>pc.addIceCandidate(new RTCIceCandidate(c)));
+  delete S.iceCandidatesQueue[fromId];
+  const answer=await pc.createAnswer();
+  await pc.setLocalDescription(answer);
+  try{await window.FB.addDoc(window.FB.collection(window.FB_DB,"voice",S.currentRoom.id,"signals"),{type:"answer",from:S.user.id,to:fromId,answer:{type:answer.type,sdp:answer.sdp},ts:window.FB.serverTimestamp()});}catch(e){}
+}
+
+async function handleAnswer(fromId,answer){
+  const pc=S.peerConnections[fromId];if(!pc)return;
+  try{await pc.setRemoteDescription(new RTCSessionDescription(answer));}catch(e){}
+}
+
+async function handleICE(fromId,candidate){
+  const pc=S.peerConnections[fromId];
+  if(pc&&pc.remoteDescription){
+    try{await pc.addIceCandidate(new RTCIceCandidate(candidate));}catch(e){}
+  }else{
+    if(!S.iceCandidatesQueue[fromId])S.iceCandidatesQueue[fromId]=[];
+    S.iceCandidatesQueue[fromId].push(candidate);
+  }
+}
+
+function playRemoteAudio(fromId,stream){
+  let audio=document.getElementById("audio_"+fromId);
+  if(!audio){audio=document.createElement("audio");audio.id="audio_"+fromId;audio.autoplay=true;document.body.appendChild(audio);}
+  audio.srcObject=stream;
+}
+
+// ══════════════════════════════════════════════
+// MESSAGES
+// ══════════════════════════════════════════════
+function appendMsg(msg){
+  const area=$("msgs-area");
+  const isMe=msg.uid===S.user?.id;
+  const wrap=document.createElement("div");wrap.className=`msg-wrap ${isMe?"me":"them"}`;
+  let sender="";
+  if(!isMe){
+    const nc=msg.isOwner?"#f59e0b":msg.color||"#6366f1";
+    sender=`<div class="msg-sender">${avHTML(msg.name,msg.color||"#6366f1",22,msg.isOwner)}<span style="color:${nc}">${msg.name}</span>${msg.isOwner?`<span class="msg-tag owner-tag">👑 المالك</span>`:""}${msg.isAdmin&&!msg.isOwner?`<span class="msg-tag admin-tag">🛡️</span>`:""}</div>`;
+  }
+  let bc="msg-bubble"+(isMe?" me":"");
+  if(isMe&&S.user.isOwner)bc+=" owner-me"; else if(!isMe&&msg.isOwner)bc+=" owner-them";
+  const t=msg.time||fmtTime();
+  wrap.innerHTML=`${sender}<div class="${bc}">${msg.text}</div><span class="msg-time" style="align-self:${isMe?"flex-start":"flex-end"}">${t}</span>`;
+  area.appendChild(wrap); area.scrollTop=area.scrollHeight;
+}
+
+async function sendMsg(){
+  const inp=$("chat-input"),text=inp.value.trim();if(!text)return;
+  inp.value="";
+  try{
+    await window.FB.addDoc(window.FB.collection(window.FB_DB,"rooms",S.currentRoom.id,"messages"),{
+      uid:S.user.id, name:S.user.name, color:S.user.color, text,
+      time:fmtTime(), isOwner:!!S.user.isOwner, isAdmin:!!S.user.isAdmin, ts:window.FB.serverTimestamp()
+    });
+    addXP(1);
+  }catch(e){showToast("خطأ في الإرسال");}
+}
+$("send-btn").onclick=sendMsg;
+$("chat-input").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMsg();}});
+
+// ══════════════════════════════════════════════
+// PROFILE
+// ══════════════════════════════════════════════
+function renderProfile(){
+  const u=S.user,lvl=u.isOwner?100:calcLevel(u.xp),pct=u.isOwner?100:xpPct(u.xp);
+  const tab=$("tab-profile");
+  const badgeCls=getLvlBadgeClass(lvl);
+  if(u.isOwner){
+    tab.innerHTML=`
+      <div class="profile-owner-card">
+        <div style="position:absolute;top:-30px;right:-30px;width:150px;height:150px;border-radius:50%;background:rgba(245,158,11,.05);filter:blur(30px)"></div>
+        <div style="display:flex;align-items:center;gap:16px;position:relative">
+          ${avHTML(u.name,u.color,80,true,"font-size:32px;")}
+          <div style="flex:1">
+            <div style="color:#f59e0b;font-weight:900;font-size:22px;animation:ownerPulse 2s infinite">${u.name} 👑</div>
+            <div style="background:linear-gradient(90deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;font-size:13px">${u.title}</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+              ${lvlBadgeSVG(100,40)}
+              <div><div style="color:#f59e0b;font-weight:900">المستوى 100</div><div style="color:rgba(245,158,11,.6);font-size:11px">الحد الأقصى</div></div>
+            </div>
+          </div>
+        </div>
+        <!-- ID -->
+        <div class="id-card" style="margin-top:14px;border-color:rgba(245,158,11,.3)">
+          <div>
+            <div style="color:#475569;font-size:10px;margin-bottom:2px">معرّفك الفريد (ID)</div>
+            <div class="id-code" style="color:#f59e0b">${u.uid_code||"IT-000000"}</div>
+          </div>
+          <button class="id-copy-btn" style="border-color:rgba(245,158,11,.4);color:#f59e0b;background:rgba(245,158,11,.1)" onclick="copyID()">📋 نسخ</button>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">${u.badges.map(b=>`<div class="badge-item">${b}</div>`).join("")}</div>
+      </div>
+      <button class="btn" id="btn-edit-profile" style="margin-top:4px">✏️ تعديل الملف</button>
+      <button class="btn danger" id="btn-logout">تسجيل الخروج</button>`;
+  }else{
+    const gl=u.gender==="male"?"♂ ذكر":u.gender==="female"?"♀ أنثى":"🌐 غير محدد";
+    tab.innerHTML=`
+      <div class="profile-card">
+        ${avHTML(u.name,u.color,70,false,"font-size:28px;flex-shrink:0")}
+        <div style="flex:1">
+          <div style="color:#f1f5f9;font-weight:800;font-size:20px">${u.name}</div>
+          <div style="color:#475569;font-size:12px;margin-top:4px">${gl}</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+            ${lvlBadgeSVG(lvl,30)}
+            <div><div style="color:#f1f5f9;font-weight:700;font-size:13px">المستوى ${lvl}</div><div style="color:#94a3b8;font-size:11px">${getLvlTitle(lvl)}</div></div>
+          </div>
+          <div style="width:100%;height:5px;border-radius:3px;background:rgba(255,255,255,.07);margin-top:8px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;border-radius:3px;background:linear-gradient(90deg,#6366f1,#8b5cf6);transition:width .5s"></div>
+          </div>
+          <div style="color:#475569;font-size:10px;margin-top:3px">${pct}/100 XP للمستوى التالي · إجمالي: ${u.xp} XP</div>
+        </div>
+      </div>
+      <!-- ID CARD -->
+      <div class="id-card">
+        <div>
+          <div style="color:#475569;font-size:10px;margin-bottom:2px">معرّفك الفريد — شاركه مع أصدقائك</div>
+          <div class="id-code">${u.uid_code||"IT-??????"}</div>
+        </div>
+        <button class="id-copy-btn" onclick="copyID()">📋 نسخ</button>
+      </div>
+      <!-- LEVEL BADGES SHOWCASE -->
+      <div class="xp-info-card" style="margin-top:4px">
+        <div style="color:#f1f5f9;font-weight:700;font-size:13px;margin-bottom:12px">شارات المستويات</div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          ${[0,20,40,60,80,100].map(l=>`
+            <div style="display:flex;flex-direction:column;align-items:center;gap:4px;opacity:${lvl>=l?1:.3}">
+              ${lvlBadgeSVG(l,34)}
+              <span style="color:#475569;font-size:9px">${l}</span>
+            </div>`).join("")}
+        </div>
+        <div style="color:#475569;font-size:10px;text-align:center;margin-top:8px">تتغير الشارة كل 20 مستوى</div>
+      </div>
+      <div class="xp-info-card" style="margin-top:4px">
+        <div style="color:#f1f5f9;font-weight:700;font-size:13px;margin-bottom:10px">كيف تكسب XP؟</div>
+        ${[["🌅","تسجيل الدخول","+10 XP"],["⏱️","كل 5 دقائق","+1 XP"],["🎤","على المايك","+2/دقيقة"],["💬","رسائل","+1 XP"]].map(([ic,lb,v])=>`<div class="xp-info-row"><div style="display:flex;gap:8px;align-items:center"><span style="font-size:16px">${ic}</span><span style="color:#94a3b8;font-size:13px">${lb}</span></div><span style="color:#6366f1;font-weight:700;font-size:13px">${v}</span></div>`).join("")}
+      </div>
+      <button class="btn" id="btn-edit-profile" style="margin-top:4px">✏️ تعديل الملف</button>
+      <button class="btn danger" id="btn-logout">تسجيل الخروج</button>`;
+  }
+  $("btn-edit-profile").onclick=openEdit;
+  $("btn-logout").onclick=logout;
+}
+
+window.copyID=()=>{
+  const code=S.user?.uid_code||"";
+  if(navigator.clipboard)navigator.clipboard.writeText(code).then(()=>showToast("تم نسخ الـ ID ✓"));
+  else{const ta=document.createElement("textarea");ta.value=code;document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);showToast("تم النسخ ✓");}
+};
+
+async function logout(){
+  clearInterval(S.xpTimer);clearInterval(S.micTimer);clearInterval(S.presTimer);
+  stopVoice();
+  [S.roomUnsub,S.usersUnsub,S.roomsUnsub,S.membersUnsub,S.dmUnsub,S.notifsUnsub,S.friendsUnsub].forEach(u=>{try{if(u)u();}catch(e){}});
+  await removePresence();
+  try{await window.FB.signOut(window.FB_AUTH);}catch(e){}
+  S.user=null;S.currentRoom=null;S.myRooms=[];S.friends=[];S.notifications=[];
+  showMode("main");showScreen("screen-login");
+}
+
+// ══════════════════════════════════════════════
+// EDIT PROFILE
+// ══════════════════════════════════════════════
+function openEdit(){
+  $("edit-name-inp").value=S.user.name;
+  S.editGender=S.user.gender||"unset";
+  document.querySelectorAll("[data-egender]").forEach(b=>b.classList.toggle("active",b.dataset.egender===S.editGender));
+  tog("edit-gender-row",!S.user.isOwner);
+  show("modal-edit-profile");
+}
+document.querySelectorAll("[data-egender]").forEach(b=>b.onclick=()=>{S.editGender=b.dataset.egender;document.querySelectorAll("[data-egender]").forEach(x=>x.classList.toggle("active",x.dataset.egender===S.editGender));});
+$("btn-cancel-edit").onclick=()=>hide("modal-edit-profile");
+$("btn-save-profile").onclick=async()=>{
+  const name=$("edit-name-inp").value.trim()||S.user.name;
+  S.user.name=name;if(!S.user.isOwner)S.user.gender=S.editGender;
+  hide("modal-edit-profile");updateHdr();renderProfile();
+  if(!S.user.isOwner&&!S.user.isGuest){
+    try{await window.FB.updateDoc(window.FB.doc(window.FB_DB,"users",S.user.id),{name,gender:S.editGender});await window.FB.updateDoc(window.FB.doc(window.FB_DB,"presence",S.user.id),{name});}catch(e){}
+  }
+};
+
+// ══════════════════════════════════════════════
+// CREATE ROOM
+// ══════════════════════════════════════════════
+function buildIconPicker(){
+  const p=$("icon-picker");p.innerHTML="";
+  ICONS.forEach(ic=>{
+    const btn=document.createElement("button");btn.className=`icon-btn${ic===S.selIcon?" selected":""}`;btn.textContent=ic;
+    btn.onclick=()=>{S.selIcon=ic;p.querySelectorAll(".icon-btn").forEach(b=>b.classList.toggle("selected",b.textContent===ic));};
+    p.appendChild(btn);
+  });
+}
+$("btn-create-room").onclick=()=>{S.selIcon="🏠";$("room-name-inp").value="";$("room-desc-inp").value="";buildIconPicker();show("modal-create-room");};
+$("btn-cancel-create").onclick=()=>hide("modal-create-room");
+$("btn-confirm-create").onclick=async()=>{
+  const name=$("room-name-inp").value.trim();if(!name)return;
+  const btn=$("btn-confirm-create");btn.disabled=true;btn.textContent="جاري...";
+  try{
+    await window.FB.addDoc(window.FB.collection(window.FB_DB,"rooms"),{name,icon:S.selIcon,desc:$("room-desc-inp").value.trim()||"غرفة خاصة",isOfficial:false,ownerId:S.user.id,ownerName:S.user.name,createdAt:window.FB.serverTimestamp()});
+    hide("modal-create-room");showToast("تم إنشاء الغرفة ✓");
+  }catch(e){showToast("خطأ!");}
+  finally{btn.disabled=false;btn.textContent="إنشاء الغرفة 🚀";}
+};
+
+// ══════════════════════════════════════════════
+// ADMIN
+// ══════════════════════════════════════════════
+$("btn-admin-panel").onclick=()=>{renderAdminContent("users");showScreen("screen-admin");};
+$("btn-close-admin").onclick=()=>showScreen("screen-main");
+document.querySelectorAll("[data-atab]").forEach(b=>b.onclick=()=>renderAdminContent(b.dataset.atab));
+
+async function renderAdminContent(tab){
+  document.querySelectorAll("[data-atab]").forEach(b=>b.classList.toggle("active",b.dataset.atab===tab));
+  const c=$("admin-content");
+  if(tab==="users"){
+    c.innerHTML=`<div style="color:#475569;text-align:center;padding:20px">جاري التحميل...</div>`;
+    let users=[];try{const snap=await window.FB.getDocs(window.FB.collection(window.FB_DB,"users"));snap.forEach(d=>users.push({id:d.id,...d.data()}));}catch(e){}
+    if(!users.length){c.innerHTML=`<div style="color:#475569;text-align:center;padding:30px">لا يوجد أعضاء</div>`;return;}
+    c.innerHTML=users.map(m=>`
+      <div class="admin-user-card">
+        ${avHTML(m.name||"?",m.color||"#6366f1",42)}
+        <div style="flex:1">
+          <div style="color:#f1f5f9;font-weight:700;font-size:13px">${m.name||"؟"} ${m.isAdmin?`<span style="background:rgba(99,102,241,.15);color:#6366f1;font-size:9px;padding:1px 5px;border-radius:5px">أدمن</span>`:""}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:3px">${lvlBadgeSVG(m.level||0,18)}<span style="color:#475569;font-size:11px">Lv.${m.level||0} · ${m.uid_code||""}</span></div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button style="padding:5px 9px;border-radius:8px;border:1px solid rgba(99,102,241,.44);background:rgba(99,102,241,.12);color:#6366f1;font-size:11px;font-weight:600" onclick="adminToggleAdmin('${m.id}',${!!m.isAdmin})">${m.isAdmin?"نزع":"ترقية"}</button>
+          <button style="padding:5px 9px;border-radius:8px;border:1px solid rgba(239,68,68,.44);background:rgba(239,68,68,.1);color:#ef4444;font-size:11px;font-weight:600" onclick="adminBan('${m.id}')">حظر</button>
+        </div>
+      </div>`).join("");
+  }else if(tab==="rooms"){
+    c.innerHTML=`<div style="background:#0f0f1a;border:1px solid rgba(245,158,11,.33);border-radius:16px;padding:12px 14px;margin-bottom:10px"><div style="display:flex;align-items:center;gap:12px"><span style="font-size:24px">👑</span><div><div style="color:#f59e0b;font-weight:700">الغرفة الرسمية</div></div></div></div>
+      ${S.myRooms.map(r=>`<div style="background:#0f0f1a;border:1px solid rgba(99,102,241,.15);border-radius:16px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;gap:12px"><span style="font-size:26px">${r.icon||"🏠"}</span><div style="flex:1"><div style="color:#f1f5f9;font-weight:700">${r.name}</div></div><button style="padding:6px 12px;border-radius:10px;border:1px solid rgba(239,68,68,.44);background:rgba(239,68,68,.1);color:#ef4444;font-size:12px;cursor:pointer;font-weight:600" onclick="adminDeleteRoom('${r.id}')">🗑️</button></div>`).join("")}`;
+  }else if(tab==="announce"){
+    c.innerHTML=`<textarea class="inp" id="announce-txt" placeholder="اكتب الإعلان..." style="min-height:120px;border-color:rgba(245,158,11,.44)"></textarea>
+
+```
+  <div id="announce-sent" class="hidden" style="background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.44);border-radius:10px;padding:10px 14px;color:#10b981;font-size:13px;font-weight:600;margin-top:8px">✓ تم الإرسال!</div>
+  <button class="btn primary" style="margin-top:12px" onclick="sendAnnounce()">📢 إرسال</button>`;
+```
+
+}else if(tab===“stats”){
+let total=0;try{const snap=await window.FB.getDocs(window.FB.collection(window.FB_DB,“users”));total=snap.size;}catch(e){}
+c.innerHTML=`<div class="stat-grid">${[{label:"الأعضاء",val:total,icon:"👥",color:"#6366f1"},{label:"متصلون",val:S.onlineUsers.length+1,icon:"🟢",color:"#10b981"},{label:"الغرف",val:S.myRooms.length+1,icon:"🏠",color:"#f59e0b"},{label:"الإشعارات",val:"🔔",icon:"📢",color:"#ec4899"}].map(s=>`<div class="stat-card" style="border:1px solid ${s.color}22"><div style="font-size:28px;margin-bottom:6px">${s.icon}</div><div class="stat-val" style="color:${s.color}">${s.val}</div><div class="stat-label">${s.label}</div></div>`).join("")}</div>`;
+}
+}
+
+window.adminToggleAdmin=async(id,isAdmin)=>{try{await window.FB.updateDoc(window.FB.doc(window.FB_DB,“users”,id),{isAdmin:!isAdmin});showToast(“تم ✓”);renderAdminContent(“users”);}catch(e){}};
+window.adminBan=async(id)=>{if(!confirm(“حظر هذا العضو؟”))return;try{await window.FB.updateDoc(window.FB.doc(window.FB_DB,“users”,id),{banned:true});showToast(“تم الحظر ✓”);renderAdminContent(“users”);}catch(e){}};
+window.adminDeleteRoom=async(id)=>{try{await window.FB.deleteDoc(window.FB.doc(window.FB_DB,“rooms”,id));showToast(“تم الحذف ✓”);}catch(e){}};
+window.sendAnnounce=async()=>{
+const txt=$(“announce-txt”);if(!txt?.value.trim())return;
+try{await window.FB.addDoc(window.FB.collection(window.FB_DB,“rooms”,“official”,“messages”),{uid:“bot”,name:“📢 إعلان”,color:”#f59e0b”,text:txt.value.trim(),time:fmtTime(),isBot:true,ts:window.FB.serverTimestamp()});txt.value=””;show(“announce-sent”);setTimeout(()=>hide(“announce-sent”),3000);}catch(e){showToast(“خطأ!”);}
+};
+
+// ══════════════════════════════════════════════
+// FIREBASE AUTH LISTENER
+// ══════════════════════════════════════════════
+window.addEventListener(“fb-ready”,()=>{
+window.FB.onAuthStateChanged(window.FB_AUTH,async fbUser=>{
+hide(“loading-screen”);
+if(fbUser){
+if(fbUser.email?.toLowerCase()===OWNER_EMAIL){doLogin(OWNER_PROFILE);return;}
+try{
+const snap=await window.FB.getDoc(window.FB.doc(window.FB_DB,“users”,fbUser.uid));
+if(snap.exists()){
+const data={id:snap.id,…snap.data()};
+if(data.banned){await window.FB.signOut(window.FB_AUTH);showScreen(“screen-login”);showMode(“main”);showToast(“تم حظرك”);return;}
+if(!data.uid_code){const uid_code=genUID();await window.FB.updateDoc(window.FB.doc(window.FB_DB,“users”,snap.id),{uid_code});data.uid_code=uid_code;}
+doLogin(data);
+}else{showScreen(“screen-login”);showMode(“main”);}
+}catch(e){showScreen(“screen-login”);showMode(“main”);}
+}else{showScreen(“screen-login”);showMode(“main”);}
+});
+});
+setTimeout(()=>{const ls=$(“loading-screen”);if(ls&&!ls.classList.contains(“hidden”)){hide(ls);showScreen(“screen-login”);showMode(“main”);}},6000);
+</script>
+
 </body>
 </html>
